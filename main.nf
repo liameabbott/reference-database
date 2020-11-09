@@ -6,17 +6,18 @@
 // enable DSL 2 syntax
 nextflow.enable.dsl=2
 
-// required parameters
+// core parameters
 params.database_directory = null
 params.source_database = null
 params.release = null
 params.species = null
 params.assembly = null
 
-// optional parameters
+// reference data ingestion parameters
 params.fasta_url = null
 params.gtf_url = null
-params.star_indexing = null
+
+// STAR alignment index parameters
 params.star_read_lengths = null
 params.star_genomeSAindexNbases = 14
 
@@ -36,10 +37,7 @@ if ( !params.species ) {
 if ( !params.assembly ) {
     error "Missing 'assembly' parameter."
 }
-if ( params.star_indexing ) {
-    if ( !params.star_read_lengths ) {
-        error "Missing 'star_read_lengths' parameter."
-    }
+if ( params.star_read_lengths ) {
     if ( !params.star_genomeSAindexNbases ) {
         error "Missing 'star_genomeSAindexNbases' parameter."
     }
@@ -184,12 +182,12 @@ workflow {
             intronic_bed,
             intergenic_bed)
 
-        if ( params.star_indexing ) {
+        if ( params.star_read_lengths ) {
             //run_star_indexing(
             //    fasta, gtf, params.star_read_lengths)
         }
     
-    } else if ( params.star_indexing ) {
+    } else if ( params.star_read_lengths ) {
         // read fasta and gtf files from database 
         fasta = Channel.fromPath(
             "${params.genomes_directory}/fasta/${params.basename}.fa.gz")

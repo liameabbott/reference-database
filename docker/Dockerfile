@@ -21,6 +21,7 @@ RUN apt-get update \
         liblzma-dev \
 		libcurl4-openssl-dev \
 		libssl-dev \
+        unzip \
 	&& mkdir -p /working/software/bin/ \
 	&& cd /working/software/ \
 	# pull Picard jar
