@@ -91,7 +91,7 @@ workflow {
     if ( params.fasta_url && params.gtf_url ) {
         // fetch, normalize, index reference genome sequence
         fasta = get_reference_fasta(params.fasta_url)
-        normalized_fasta = normalize_fasta(fasta[0])[0]
+        normalized_fasta = normalize_fasta(fasta[1])[0]
         fasta_index = index_fasta(normalized_fasta)
         dict = create_sequence_dictionary(fasta[0])
 
