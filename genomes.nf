@@ -32,17 +32,18 @@ process normalize_fasta {
     path(fasta)
 
     output:
+    path("normalized.fa")
     path("normalized.fa.gz")
 
     """
     java -jar ${picard_jar} \
         NormalizeFasta \
         --INPUT ${fasta} \
-        --OUTPUT /dev/stdout \
+        --OUTPUT normalized.fa \
         --LINE_LENGTH 60 \
         --USE_JDK_DEFLATER true \
-        --USE_JDK_INFLATER true | \
-    bgzip -c > normalized.fa.gz
+        --USE_JDK_INFLATER true
+    bgzip -c normalized.fa > normalized.fa.gz
     """
 }
 
@@ -512,8 +513,6 @@ process generate_star_index {
     EOF
     )
     eval \$cmd
-    echo "reference.fa=${params.fasta_url}" >> reference.star_idx.cmd
-    echo "reference.gtf=${params.gtf_url}" >> reference.star_idx.cmd
     echo \$cmd >> reference.star_idx.cmd
     """
 }
