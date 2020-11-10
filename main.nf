@@ -75,66 +75,9 @@ include {
     extract_MT_genes;
     extract_intronic_regions;
     extract_intergenic_regions;
-    bed_to_interval_list
+    bed_to_interval_list;
+    generate_star_index
 } from './genomes.nf'
-
-process generate_star_index {
-    cpus Runtime.runtime.availableProcessors()
- 
-    publishDir "${params.database_directory}/star-index/", \
-        mode: "copy", overwrite: true //, \
-        //saveAs: { filename -> "${basename}.${read_length}bp") }
-    //publishDir "${params.database_directory}/star-index", \
-    //    pattern: "reference.star_idx.cmd", \
-    //    mode: "move", overwrite: true, \
-    //    saveAs: { filename -> "${basename}.${read_length}bp.star_idx.cmd" }
-
-    input:
-    path(reference_fasta)
-    path(reference_gtf)
-    val(read_length)
-
-    output:
-    path("reference.star_idx.cmd")
-    path("reference.star_idx/Genome")
-    path("reference.star_idx/Log.out")
-    path("reference.star_idx/SA")
-    path("reference.star_idx/SAindex")
-    path("reference.star_idx/chrLength.txt")
-    path("reference.star_idx/chrName.txt")
-    path("reference.star_idx/chrNameLength.txt")
-    path("reference.star_idx/chrStart.txt")
-    path("reference.star_idx/exonGeTrInfo.tab")
-    path("reference.star_idx/exonInfo.tab")
-    path("reference.star_idx/geneInfo.tab")
-    path("reference.star_idx/genomeParameters.txt")
-    path("reference.star_idx/sjdbInfo.txt")
-    path("reference.star_idx/sjdbList.fromGTF.out.tab")
-    path("reference.star_idx/sjdbList.out.tab")
-    path("reference.star_idx/transcriptInfo.tab")
-
-    """
-    gunzip -c ${reference_fasta} > reference.fa
-    gunzip -c ${reference_gtf} > reference.gtf
-    cmd=\$(cat <<-EOF
-    STAR \
-        --runThreadN ${task.cpus} \
-        --runMode genomeGenerate \
-        --genomeDir reference.star_idx/ \
-        --genomeFastaFiles reference.fa \
-        --sjdbGTFfile reference.gtf \
-        --sjdbOverhang \$((${read_length} - 1)) \
-        --genomeSAindexNbases ${params.star_genomeSAindexNbases} \
-        --limitGenomeGenerateRAM 200000000000
-    EOF
-    )
-    eval \$cmd
-    echo "reference.fa=${params.fasta_url}" >> reference.star_idx.cmd
-    echo "reference.gtf=${params.gtf_url}" >> reference.star_idx.cmd
-    echo \$cmd >> reference.star_idx.cmd 
-    cp -r reference.star_idx/ ${basename}.tester.star_idx/
-    """
-}
 
 def run_star_indexing(fasta, gtf, read_lengths) {
     star_read_lengths = Channel
@@ -183,8 +126,8 @@ workflow {
             intergenic_bed)
 
         if ( params.star_read_lengths ) {
-            //run_star_indexing(
-            //    fasta, gtf, params.star_read_lengths)
+            run_star_indexing(
+                fasta, gtf, params.star_read_lengths)
         }
     
     } else if ( params.star_read_lengths ) {
@@ -195,8 +138,8 @@ workflow {
             "${params.genomes_directory}/gtf/${params.basename}.gtf.gz")
 
         // create STAR indices with specified read lengths
-        //run_star_indexing(
-        //    fasta, gtf, params.star_read_lengths)
+        run_star_indexing(
+            fasta, gtf, params.star_read_lengths)
     }
 
 }

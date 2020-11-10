@@ -418,4 +418,104 @@ process bed_to_interval_list {
     """
 }
 
+process generate_star_index {
+    cpus Runtime.runtime.availableProcessors()
+
+    publishDir "${genomes_directory}/star", \
+        pattern: "reference.star_idx.cmd", \
+        mode: "copy", overwrite: true, \
+        saveAs: { filename -> "${basename}.star_idx.cmd" }
+    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
+        pattern: "reference.star_idx/Genome", \
+        mode: "copy", overwrite: true
+    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
+        pattern: "reference.star_idx/Log.out", \
+        mode: "copy", overwrite: true
+    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
+        pattern: "reference.star_idx/SA", \
+        mode: "copy", overwrite: true
+    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
+        pattern: "reference.star_idx/SAindex", \
+        mode: "copy", overwrite: true
+    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
+        pattern: "reference.star_idx/chrLength.txt", \
+        mode: "copy", overwrite: true
+    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
+        pattern: "reference.star_idx/chrName.txt", \
+        mode: "copy", overwrite: true
+    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
+        pattern: "reference.star_idx/chrNameLength.txt", \
+        mode: "copy", overwrite: true
+    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
+        pattern: "reference.star_idx/chrStart.txt", \
+        mode: "copy", overwrite: true
+    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
+        pattern: "reference.star_idx/exonGeTrInfo.tab", \
+        mode: "copy", overwrite: true
+    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
+        pattern: "reference.star_idx/exonInfo.tab", \
+        mode: "copy", overwrite: true
+    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
+        pattern: "reference.star_idx/geneInfo.tab", \
+        mode: "copy", overwrite: true
+    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
+        pattern: "reference.star_idx/genomeParameters.txt", \
+        mode: "copy", overwrite: true
+    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
+        pattern: "reference.star_idx/sjdbInfo.txt", \
+        mode: "copy", overwrite: true
+    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
+        pattern: "reference.star_idx/sjdbList.fromGTF.out.tab", \
+        mode: "copy", overwrite: true
+    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
+        pattern: "reference.star_idx/sjdbList.out.tab", \
+        mode: "copy", overwrite: true
+    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
+        pattern: "reference.star_idx/transcriptInfo.tab", \
+        mode: "copy", overwrite: true
+
+    input:
+    path(reference_fasta)
+    path(reference_gtf)
+    val(read_length)
+
+    output:
+    path("reference.star_idx.cmd")
+    path("reference.star_idx/Genome")
+    path("reference.star_idx/Log.out")
+    path("reference.star_idx/SA")
+    path("reference.star_idx/SAindex")
+    path("reference.star_idx/chrLength.txt")
+    path("reference.star_idx/chrName.txt")
+    path("reference.star_idx/chrNameLength.txt")
+    path("reference.star_idx/chrStart.txt")
+    path("reference.star_idx/exonGeTrInfo.tab")
+    path("reference.star_idx/exonInfo.tab")
+    path("reference.star_idx/geneInfo.tab")
+    path("reference.star_idx/genomeParameters.txt")
+    path("reference.star_idx/sjdbInfo.txt")
+    path("reference.star_idx/sjdbList.fromGTF.out.tab")
+    path("reference.star_idx/sjdbList.out.tab")
+    path("reference.star_idx/transcriptInfo.tab")
+
+    """
+    cmd=\$(cat <<-EOF
+    STAR \
+        --runThreadN ${task.cpus} \
+        --runMode genomeGenerate \
+        --genomeDir reference.star_idx/ \
+        --genomeFastaFiles reference.fa \
+        --sjdbGTFfile reference.gtf \
+        --sjdbOverhang \$((${read_length} - 1)) \
+        --genomeSAindexNbases ${params.star_genomeSAindexNbases} \
+        --limitGenomeGenerateRAM 200000000000
+    EOF
+    )
+    eval \$cmd
+    echo "reference.fa=${params.fasta_url}" >> reference.star_idx.cmd
+    echo "reference.gtf=${params.gtf_url}" >> reference.star_idx.cmd
+    echo \$cmd >> reference.star_idx.cmd
+    """
+}
+
 
