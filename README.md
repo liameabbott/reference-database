@@ -142,8 +142,18 @@ The following reference and metadata files are published in the `<database_direc
   * All intronic regions in the reference genome.
 * `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.intergenic.interval_list`
   * All intergenic regions in the reference genome.
+  
+#### RSEM index files
 
-### STAR alignment index
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.chrlist`
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.grp`
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.idx.fa`
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.n2g.idx.fa`
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.seq`
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.ti`
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.transcripts.fa`
+
+#### STAR alignment index
   
 If `star_read_lengths` is a string of comma-separated integers (e.g. `"50,60,100"`), then STAR indices corresponding to those read lengths will be created during execution.
   
