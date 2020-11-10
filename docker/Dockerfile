@@ -1,4 +1,4 @@
-FROM openjdk:16-slim-buster
+FROM openjdk:8-slim-buster
 
 ARG PICARD_VERSION=2.23.8
 ARG SAMTOOLS_VERSION=1.11
