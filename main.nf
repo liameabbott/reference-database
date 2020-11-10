@@ -152,7 +152,7 @@ workflow {
     // create STAR alignment indices
     if ( params.star_read_lengths ) {
         star_read_lengths = Channel
-            .fromList(read_lengths.toString().replaceAll("\\s", "").tokenize(","))
+            .fromList(params.star_read_lengths.toString().replaceAll("\\s", "").tokenize(","))
         star_idx = generate_star_index(
             fasta, gtf, star_read_lengths)
     }
