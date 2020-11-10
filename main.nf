@@ -61,6 +61,7 @@ params.genomes_directory = [
 
 include {
     get_reference_fasta;
+    extract_primary_assembly;
     normalize_fasta;
     index_fasta;
     create_sequence_dictionary;
