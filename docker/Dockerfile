@@ -6,6 +6,7 @@ ARG HTSLIB_VERSION=1.11
 ARG STAR_VERSION=2.7.6a
 ARG BEDTOOLS_VERSION=2.29.2
 ARG DROPSEQ_TOOLS_VERSION=2.4.0
+ARG RSEM_VERSION=1.3.3
 
 WORKDIR /working
 
@@ -22,6 +23,8 @@ RUN apt-get update \
 		libcurl4-openssl-dev \
 		libssl-dev \
         unzip \
+        perl \
+        build-essential \
 	&& mkdir -p /working/software/bin/ \
 	&& cd /working/software/ \
 	# pull Picard jar
@@ -68,8 +71,21 @@ RUN apt-get update \
     # install Drop-seq tools
     && wget "https://github.com/broadinstitute/Drop-seq/releases/download/v${DROPSEQ_TOOLS_VERSION}/Drop-seq_tools-${DROPSEQ_TOOLS_VERSION}.zip" \
     && unzip "Drop-seq_tools-${DROPSEQ_TOOLS_VERSION}.zip" \
-    && ln -sf /working/software/Drop-seq_tools-${DROPSEQ_TOOLS_VERSION}/* /working/software/bin/ \
-    && rm "Drop-seq_tools-${DROPSEQ_TOOLS_VERSION}.zip"
+    && ln -s /working/software/Drop-seq_tools-${DROPSEQ_TOOLS_VERSION}/* /working/software/bin/ \
+    && rm "Drop-seq_tools-${DROPSEQ_TOOLS_VERSION}.zip" \
+    # install RSEM
+    && wget "https://github.com/deweylab/RSEM/archive/v${RSEM_VERSION}.tar.gz" \
+    && mkdir /working/software/RSEM-install \
+    && tar -xzf "v${RSEM_VERSION}.tar.gz" \
+        -C RSEM-install/ \
+        --strip-components 1 \
+    && cd RSEM-install/ \
+    && make \
+    && mkdir /working/software/RSEM \
+    && make install DESTDIR=/working/software prefix=/RSEM \
+    && ln -s /working/software/RSEM/bin/* /usr/local/bin/ \
+    && cd /working/software \
+    && rm -r "v${RSEM_VERSION}.tar.gz" RSEM-install/
 
 ENV PATH="/working/software/bin:$PATH"
 

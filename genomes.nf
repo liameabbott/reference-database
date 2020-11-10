@@ -580,7 +580,7 @@ process rsem_prepare_reference {
     """
     gunzip -c ${fasta} > reference.fa
     gunzip -c ${gtf} > reference.gtf
-    rsem-prepare-reference --gtf reference.gtf reference.fasta rsem
+    rsem-prepare-reference --gtf reference.gtf reference.fa rsem
     """
 }
 
