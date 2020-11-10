@@ -88,10 +88,10 @@ workflow {
         // fetch reference genome sequence
         fasta = get_reference_fasta(params.fasta_url)
 
-        // extract primary assembly if refseq or ensembl 
-        // (unsure how to do this for gencode?)
+        // extract primary assembly if refseq  
+        // (unsure how to do this for gencode or ensembl?)
         // can also just provide primary assembly URL
-        if ( ['ensembl', 'refseq'].contains(params.source_database) ) {
+        if ( params.source_database == "refseq" ) {
             fasta = extract_primary_assembly(fasta[0])
         }
 

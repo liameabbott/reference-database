@@ -13,18 +13,13 @@ process get_reference_fasta {
     val(fasta_url)
 
     output:
-    path("reference.fa.gz")
+    path("reference.fa")
     path("reference.fa.gz.url")
 
     """
-    wget -O - ${fasta_url} | \
-    gunzip -c | \
-    awk '
-        BEGIN { p=0; }
-        \$0 ~ /^>/ { if(\$0 ~ /(Primary Assembly)|(primary_assembly)/) p=1; else p=0; }
-        { if(p) print \$0 }
-    ' | \
-    gzip -c > reference.fa.gz
+    wget -qO- ${fasta_url} | \
+    gunzip -c > reference.fa
+    
     printf "${fasta_url}\n" > reference.fa.gz.url
     """
 }
@@ -34,15 +29,13 @@ process extract_primary_assembly {
     path(fasta)
 
     output:
-    path("primary.fa.gz")
+    path("primary.fa")
 
     """
-    gunzip -c ${fasta} | \
     awk '
         BEGIN { p=0; }
-        \$0 ~ /^>/ { if(\$0 ~ /(Primary Assembly)|(primary_assembly)/) p=1; else p=0; }
-        { if(p) print \$0 }' | \
-    gzip -c > primary.fa.gz
+        \$0 ~ /^>/ { if(\$0 ~ /Primary Assembly/) p=1; else p=0; }
+        { if(p) print \$0 }' ${fasta} > primary.fa
     """
 }
 
