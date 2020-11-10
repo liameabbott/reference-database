@@ -17,8 +17,32 @@ process get_reference_fasta {
     path("reference.fa.gz.url")
 
     """
-    wget -O reference.fa.gz ${fasta_url}
+    wget -O - ${fasta_url} | \
+    gunzip -c | \
+    awk '
+        BEGIN { p=0; }
+        \$0 ~ /^>/ { if(\$0 ~ /(Primary Assembly)|(primary_assembly)/) p=1; else p=0; }
+        { if(p) print \$0 }
+    ' | \
+    gzip -c > reference.fa.gz
     printf "${fasta_url}\n" > reference.fa.gz.url
+    """
+}
+
+process extract_primary_assembly {
+    input:
+    path(fasta)
+
+    output:
+    path("primary.fa.gz")
+
+    """
+    gunzip -c ${fasta} | \
+    awk '
+        BEGIN { p=0; }
+        \$0 ~ /^>/ { if(\$0 ~ /(Primary Assembly)|(primary_assembly)/) p=1; else p=0; }
+        { if(p) print \$0 }' | \
+    gzip -c > primary.fa.gz
     """
 }
 
@@ -514,6 +538,56 @@ process generate_star_index {
     )
     eval \$cmd
     echo \$cmd >> reference.star_idx.cmd
+    """
+}
+
+process rsem_prepare_reference {
+    publishDir "${genomes_directory}/rsem", \
+        mode: "copy", overwrite: true, \
+        pattern: "rsem.chrlist",
+        saveAs: { filename -> "${basename}.chrlist" }
+    publishDir "${genomes_directory}/rsem", \
+        mode: "copy", overwrite: true, \
+        pattern: "rsem.grp",
+        saveAs: { filename -> "${basename}.grp" }
+    publishDir "${genomes_directory}/rsem", \
+        mode: "copy", overwrite: true, \
+        pattern: "rsem.idx.fa",
+        saveAs: { filename -> "${basename}.idx.fa" }
+    publishDir "${genomes_directory}/rsem", \
+        mode: "copy", overwrite: true, \
+        pattern: "rsem.n2g.idx.fa",
+        saveAs: { filename -> "${basename}.n2g.idx.fa" }
+    publishDir "${genomes_directory}/rsem", \
+        mode: "copy", overwrite: true, \
+        pattern: "rsem.seq",
+        saveAs: { filename -> "${basename}.seq" }
+    publishDir "${genomes_directory}/rsem", \
+        mode: "copy", overwrite: true, \
+        pattern: "rsem.ti",
+        saveAs: { filename -> "${basename}.ti" }
+    publishDir "${genomes_directory}/rsem", \
+        mode: "copy", overwrite: true, \
+        pattern: "rsem.transcripts.fa",
+        saveAs: { filename -> "${basename}.transcripts.fa" }
+
+    input:
+    path(fasta)
+    path(gtf)
+
+    output:
+    path("rsem.chrlist")
+    path("rsem.grp")
+    path("rsem.idx.fa")
+    path("rsem.n2g.idx.fa")
+    path("rsem.seq")
+    path("rsem.ti")
+    path("rsem.transcripts.fa")
+
+    """
+    gunzip -c ${fasta} > reference.fa
+    gunzip -c ${gtf} > reference.gtf
+    rsem-prepare-reference --gtf reference.gtf reference.fasta rsem
     """
 }
 

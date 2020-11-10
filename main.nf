@@ -76,34 +76,42 @@ include {
     extract_intronic_regions;
     extract_intergenic_regions;
     bed_to_interval_list;
+    rsem_prepare_reference;
     generate_star_index
 } from './genomes.nf'
-
-def run_star_indexing(fasta, gtf, read_lengths) {
-    star_read_lengths = Channel
-        .fromList(read_lengths.toString().replaceAll("\\s", "").tokenize(","))
-    star_index = generate_star_index(
-        fasta, gtf, star_read_lengths)
-}
 
 workflow {
 
     if ( params.fasta_url && params.gtf_url ) {
-        // fetch, normalize, index reference genome sequence
+
+        // fetch reference genome sequence
         fasta = get_reference_fasta(params.fasta_url)
-        normalized_fasta = normalize_fasta(fasta[1])[0]
-        fasta_index = index_fasta(normalized_fasta)
+
+        // extract primary assembly if refseq or ensembl 
+        // (unsure how to do this for gencode?)
+        // can also just provide primary assembly URL
+        if ( ['ensembl', 'refseq'].contains(params.source_database) ) {
+            fasta = extract_primary_assembly(fasta[0])
+        }
+
+        // normalize and index fasta
+        normalized_fasta = normalize_fasta(fasta[0])
+        fasta_index = index_fasta(normalized_fasta[1])
+
+        // create Picard Tools sequence dictionary
         dict = create_sequence_dictionary(fasta[0])
 
-        // fetch reference genome annotation, and parse into 
-        // reduced and refFlat formats
-        gtf = get_reference_gtf(params.gtf_url)[0]
-        reduced_gtf = reduce_gtf(gtf, dict)[0]
-        refflat = gtf_to_refFlat(gtf, dict)[0]
+        // fetch reference genome annotation
+        gtf = get_reference_gtf(params.gtf_url)
 
-        // parse annotations into BED format and extract
-        // regions in individual BED files
-        bed = gtf_to_bed(gtf)[0]
+        // parse GTF into reduced and refFlat formats
+        reduced_gtf = reduce_gtf(gtf[0], dict)[0]
+        refflat = gtf_to_refFlat(gtf[0], dict)[0]
+
+        // parse annotations into BED format
+        bed = gtf_to_bed(gtf[0])[0]
+
+        // extract regions into individual BED files
         genes_bed = extract_genes(bed)[0]
         exons_bed = extract_exons(bed)[0]
         cds_bed = extract_CDS(bed)[0]
@@ -125,21 +133,27 @@ workflow {
             intronic_bed,
             intergenic_bed)
 
-        if ( params.star_read_lengths ) {
-            run_star_indexing(
-                normalized_fasta, gtf, params.star_read_lengths)
-        }
-    
-    } else if ( params.star_read_lengths ) {
+        // gzipped reference files for downstream work
+        fasta = normalized_fasta[1]
+        gtf = gtf[1]
+
+    } else {
         // read fasta and gtf files from database 
         fasta = Channel.fromPath(
             "${params.genomes_directory}/fasta/${params.basename}.fa.gz")
         gtf = Channel.fromPath(
             "${params.genomes_directory}/gtf/${params.basename}.gtf.gz")
+    }
 
-        // create STAR indices with specified read lengths
-        run_star_indexing(
-            normalized_fasta, gtf, params.star_read_lengths)
+    // create RSEM indices
+    rsem_idx = rsem_prepare_reference(fasta, gtf)
+
+    // create STAR alignment indices
+    if ( params.star_read_lengths ) {
+        star_read_lengths = Channel
+            .fromList(read_lengths.toString().replaceAll("\\s", "").tokenize(","))
+        star_idx = generate_star_index(
+            fasta, gtf, star_read_lengths)
     }
 
 }
