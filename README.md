@@ -4,7 +4,7 @@ This repository contains pipeline code to ingest and process raw source data fro
 
 Use this Nextflow pipeline and its configuration parameters to pull reference data from those source databases and create metadata files, such as interval files and alignment indices.
 
-### Running the pipeline
+## Running the pipeline
 
 To run the pipeline, you must have Docker and Nextflow installed on your machine. Then, the base command is simply:
 ```
@@ -43,9 +43,9 @@ params {
 }
 ```
 
-### Parameters
+## Parameters
 
-#### Core
+### Core
 These parameters are shared across all pipeline execution components.
 
 * `database_directory` (optional, default `"s3://gates-mri-bioinformatics/reference-database"`):
@@ -59,7 +59,7 @@ These parameters are shared across all pipeline execution components.
 * `assembly` (required): 
   * The assembly build of the species' genome (e.g. `"GRCh38"`, `"Mmul_10"`).
 
-#### Reference data ingestion
+### Reference data ingestion
 If both `fasta_url` and `gtf_url` are not `null`, the pipeline will fetch the reference sequence and annotation from the external database and store them as well as other derived metadata files in `<database_directory>/genomes`. See details below.
 
 * `fasta_url` (optional, default `null`):
@@ -67,7 +67,7 @@ If both `fasta_url` and `gtf_url` are not `null`, the pipeline will fetch the re
 * `gtf_url` (optional, default `null`):
   * The URL of the reference annotation file to download (e.g. `"ftp://ftp.ensembl.org/pub/release-101/gtf/macaca_mulatta/Macaca_mulatta.Mmul_10.101.gtf.gz"`).
 
-#### STAR alignment index
+### STAR alignment index
 If `star_read_lengths` is not null, the pipeline will create STAR indices during execution. See details below.
 
 * `star_read_lengths` (optional, default `null`): 
@@ -75,17 +75,80 @@ If `star_read_lengths` is not null, the pipeline will create STAR indices during
 * `star_genomeSAindexNbases` (optional, default `14`): 
   * This value is passed through to STAR's `genomeSAindexNbases` parameter.
   
-### Pipeline components
+## Pipeline components
   
 The pipeline consists of separate components that may be run together in one run of the pipeline, or separately as needed (as long as the necessary reference files already exist in the database).
   
-#### Reference data ingestion
+### Reference data ingestion
   
-If both `fasta_url` and `gtf_url` are valid URLs, the reference data ingestion component will be run during pipeline execution. 
+If both `fasta_url` and `gtf_url` are valid URLs, the reference data ingestion component will be run during execution.
+
+The following reference and metadata files are published in the `<database_directory>`:
+
+#### Reference sequence
+
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/fasta/<source_database>.release_<release>.<species>.<assembly>.fa.gz`
+  * The reference genome sequence.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/fasta/<source_database>.release_<release>.<species>.<assembly>.fa.fai`
+  * FASTA index.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/fasta/<source_database>.release_<release>.<species>.<assembly>.fa.gzi`
+  * Block compression index.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/fasta/<source_database>.release_<release>.<species>.<assembly>.dict`
+  * Picard Tools reference sequence dictionary. 
+
+#### Reference annotation
+
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/gtf/<source_database>.release_<release>.<species>.<assembly>.gtf.gz`
+  * Reference annotation file.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/gtf/<source_database>.release_<release>.<species>.<assembly>.reduced.gtf.gz`
+  * Reduced GTF created with Drop-seq Tools' `ReduceGtf`.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/gtf/<source_database>.release_<release>.<species>.<assembly>.refFlat`
+  * refFlat file used by Picard Tools, created with `ConvertToRefFlat` tool in Drop-seq Tools package.
   
-#### STAR alignment index
+#### Reference genome regions in BED format
+
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.bed.gz`
+  * The main annotation file, in BED format.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.genes.bed.gz`
+  * All genes in the reference genome.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.exons.bed.gz`
+  * All exons in the reference genome.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.CDS.bed.gz`
+  * All CDS regions in the reference genome.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.genes.rRNA.bed.gz`
+  * All ribosomal RNA genes in the reference genome.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.genes.MT.bed.gz`
+  * All mitochondrial genes in the reference genome.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.intronic.bed.gz`
+  * All intronic regions in the reference genome.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.intergenic.bed.gz`
+  * All intergenic regions in the reference genome.
   
-If `star_read_lengths` is a string of comma-separated integers (e.g. `"50,60,100"`), then STAR indices corresponding to those read lengths will be created during pipeline execution.
+#### Reference genome regions in interval_list format
+
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.interval_list`
+  * The main annotation file, in BED format.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.genes.interval_list`
+  * All genes in the reference genome.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.exons.interval_list`
+  * All exons in the reference genome.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.CDS.interval_list`
+  * All CDS regions in the reference genome.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.genes.rRNA.interval_list`
+  * All ribosomal RNA genes in the reference genome.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.genes.MT.interval_list`
+  * All mitochondrial genes in the reference genome.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.intronic.interval_list`
+  * All intronic regions in the reference genome.
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.intergenic.interval_list`
+  * All intergenic regions in the reference genome.
+
+### STAR alignment index
+  
+If `star_read_lengths` is a string of comma-separated integers (e.g. `"50,60,100"`), then STAR indices corresponding to those read lengths will be created during execution.
   
 This component requires that either the reference data ingestion component is also run during the same execution, or that valid reference sequence and annotation files (as defined by the `source_database`, `release`, `species`, and `assembly` parameters) already exist in the database.
 
+This component creates the file:
+
+* `genomes/<source_database>/release-<release>/<species>/<assembly>/star/<source_database>.release_<release>.<species>.<assembly>.<read_length>_bp.star_idx/`
