@@ -441,8 +441,8 @@ process rsem_prepare_reference {
 
     publishDir "${genomes_directory}/rsem",
         mode: "copy", overwrite: true, \
-        pattern: "rsem_index", \
-        saveAs: { filename -> "${basename}.${params.rsem_star_sjdb_overhang}_overhang.rsem_idx" }
+        pattern: "rsem_index/", \
+        saveAs: { filename -> "${basename}.${params.rsem_star_sjdb_overhang}_overhang.rsem_idx/" }
     /*publishDir "${genomes_directory}/rsem", \
         mode: "copy", overwrite: true, \
         pattern: "rsem.chrlist",
@@ -477,7 +477,7 @@ process rsem_prepare_reference {
     path(gtf)
 
     output:
-    path("rsem_index")
+    path("rsem_index/")
     /*path("rsem.chrlist")
     path("rsem.grp")
     path("rsem.idx.fa")
@@ -491,7 +491,7 @@ process rsem_prepare_reference {
     gunzip -c ${gtf} > reference.gtf
     rsem-prepare-reference \
         --gtf reference.gtf \
-        reference.fa rsem
+        reference.fa rsem_index/
     """
 }
 
