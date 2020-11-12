@@ -491,7 +491,6 @@ process rsem_prepare_reference {
     gunzip -c ${gtf} > reference.gtf
     rsem-prepare-reference \
         --gtf reference.gtf \
-        --star -p ${task.cpus} \
         reference.fa rsem
     """
 }
