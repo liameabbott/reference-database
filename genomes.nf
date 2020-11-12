@@ -436,6 +436,56 @@ process bed_to_interval_list {
     """
 }
 
+process rsem_prepare_reference {
+    publishDir "${genomes_directory}/rsem", \
+        mode: "copy", overwrite: true, \
+        pattern: "rsem.chrlist",
+        saveAs: { filename -> "${basename}.chrlist" }
+    publishDir "${genomes_directory}/rsem", \
+        mode: "copy", overwrite: true, \
+        pattern: "rsem.grp",
+        saveAs: { filename -> "${basename}.grp" }
+    publishDir "${genomes_directory}/rsem", \
+        mode: "copy", overwrite: true, \
+        pattern: "rsem.idx.fa",
+        saveAs: { filename -> "${basename}.idx.fa" }
+    publishDir "${genomes_directory}/rsem", \
+        mode: "copy", overwrite: true, \
+        pattern: "rsem.n2g.idx.fa",
+        saveAs: { filename -> "${basename}.n2g.idx.fa" }
+    publishDir "${genomes_directory}/rsem", \
+        mode: "copy", overwrite: true, \
+        pattern: "rsem.seq",
+        saveAs: { filename -> "${basename}.seq" }
+    publishDir "${genomes_directory}/rsem", \
+        mode: "copy", overwrite: true, \
+        pattern: "rsem.ti",
+        saveAs: { filename -> "${basename}.ti" }
+    publishDir "${genomes_directory}/rsem", \
+        mode: "copy", overwrite: true, \
+        pattern: "rsem.transcripts.fa",
+        saveAs: { filename -> "${basename}.transcripts.fa" }
+
+    input:
+    path(fasta)
+    path(gtf)
+
+    output:
+    path("rsem.chrlist")
+    path("rsem.grp")
+    path("rsem.idx.fa")
+    path("rsem.n2g.idx.fa")
+    path("rsem.seq")
+    path("rsem.ti")
+    path("rsem.transcripts.fa")
+
+    """
+    gunzip -c ${fasta} > reference.fa
+    gunzip -c ${gtf} > reference.gtf
+    rsem-prepare-reference --gtf reference.gtf reference.fa rsem
+    """
+}
+
 process generate_star_index {
     cpus Runtime.runtime.availableProcessors()
 
@@ -493,8 +543,8 @@ process generate_star_index {
         mode: "copy", overwrite: true
 
     input:
-    path(reference_fasta)
-    path(reference_gtf)
+    path(fasta)
+    path(gtf)
     val(read_length)
 
     output:
@@ -517,6 +567,8 @@ process generate_star_index {
     path("reference.star_idx/transcriptInfo.tab")
 
     """
+    gunzip -c ${fasta} > reference.fa
+    gunzip -c ${gtf} > reference.gtf
     cmd=\$(cat <<-EOF
     STAR \
         --runThreadN ${task.cpus} \
@@ -534,54 +586,5 @@ process generate_star_index {
     """
 }
 
-process rsem_prepare_reference {
-    publishDir "${genomes_directory}/rsem", \
-        mode: "copy", overwrite: true, \
-        pattern: "rsem.chrlist",
-        saveAs: { filename -> "${basename}.chrlist" }
-    publishDir "${genomes_directory}/rsem", \
-        mode: "copy", overwrite: true, \
-        pattern: "rsem.grp",
-        saveAs: { filename -> "${basename}.grp" }
-    publishDir "${genomes_directory}/rsem", \
-        mode: "copy", overwrite: true, \
-        pattern: "rsem.idx.fa",
-        saveAs: { filename -> "${basename}.idx.fa" }
-    publishDir "${genomes_directory}/rsem", \
-        mode: "copy", overwrite: true, \
-        pattern: "rsem.n2g.idx.fa",
-        saveAs: { filename -> "${basename}.n2g.idx.fa" }
-    publishDir "${genomes_directory}/rsem", \
-        mode: "copy", overwrite: true, \
-        pattern: "rsem.seq",
-        saveAs: { filename -> "${basename}.seq" }
-    publishDir "${genomes_directory}/rsem", \
-        mode: "copy", overwrite: true, \
-        pattern: "rsem.ti",
-        saveAs: { filename -> "${basename}.ti" }
-    publishDir "${genomes_directory}/rsem", \
-        mode: "copy", overwrite: true, \
-        pattern: "rsem.transcripts.fa",
-        saveAs: { filename -> "${basename}.transcripts.fa" }
-
-    input:
-    path(fasta)
-    path(gtf)
-
-    output:
-    path("rsem.chrlist")
-    path("rsem.grp")
-    path("rsem.idx.fa")
-    path("rsem.n2g.idx.fa")
-    path("rsem.seq")
-    path("rsem.ti")
-    path("rsem.transcripts.fa")
-
-    """
-    gunzip -c ${fasta} > reference.fa
-    gunzip -c ${gtf} > reference.gtf
-    rsem-prepare-reference --gtf reference.gtf reference.fa rsem
-    """
-}
 
 
