@@ -345,7 +345,7 @@ process extract_intergenic_regions {
 
     """
     awk -v OFS=\$'\t' '{print \$1,\$2}' ${fasta_fai} | \
-    sort -k1n -k2n > chr_sizes.tsv
+    sort -k1V > chr_sizes.tsv
 
     bedtools complement -i ${genes_bed} -g chr_sizes.tsv > intergenic.bed
     gzip -c intergenic.bed > intergenic.bed.gz
