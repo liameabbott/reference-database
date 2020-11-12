@@ -437,7 +437,13 @@ process bed_to_interval_list {
 }
 
 process rsem_prepare_reference {
-    publishDir "${genomes_directory}/rsem", \
+    cpus Runtime.runtime.availableProcessors()
+
+    publishDir "${genomes_directory}/rsem",
+        mode: "copy", overwrite: true, \
+        pattern: "rsem_index", \
+        saveAs: { filename -> "${basename}.${params.rsem_star_sjdb_overhang}_overhang.rsem_idx" }
+    /*publishDir "${genomes_directory}/rsem", \
         mode: "copy", overwrite: true, \
         pattern: "rsem.chrlist",
         saveAs: { filename -> "${basename}.chrlist" }
@@ -464,25 +470,29 @@ process rsem_prepare_reference {
     publishDir "${genomes_directory}/rsem", \
         mode: "copy", overwrite: true, \
         pattern: "rsem.transcripts.fa",
-        saveAs: { filename -> "${basename}.transcripts.fa" }
+        saveAs: { filename -> "${basename}.transcripts.fa" }*/
 
     input:
     path(fasta)
     path(gtf)
 
     output:
-    path("rsem.chrlist")
+    path("rsem_index")
+    /*path("rsem.chrlist")
     path("rsem.grp")
     path("rsem.idx.fa")
     path("rsem.n2g.idx.fa")
     path("rsem.seq")
     path("rsem.ti")
-    path("rsem.transcripts.fa")
+    path("rsem.transcripts.fa")*/
 
     """
     gunzip -c ${fasta} > reference.fa
     gunzip -c ${gtf} > reference.gtf
-    rsem-prepare-reference --gtf reference.gtf reference.fa rsem
+    rsem-prepare-reference \
+        --gtf reference.gtf \
+        --star -p ${task.cpus} \
+        reference.fa rsem
     """
 }
 

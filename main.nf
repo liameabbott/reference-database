@@ -37,9 +37,12 @@ if ( !params.species ) {
 if ( !params.assembly ) {
     error "Missing 'assembly' parameter."
 }
-if ( params.star_read_lengths ) {
-    if ( !params.star_genomeSAindexNbases ) {
-        error "Missing 'star_genomeSAindexNbases' parameter."
+if ( params.run_reference_data_ingestion ) {
+    if ( !params.fasta_url ) {
+        error "Missing 'fasta_url' parameter required by reference data ingestion."
+    }
+    if ( !params.gtf_url ) {
+        error "Missing 'gtf_url' parameter required by reference data ingestion."
     }
 }
 
@@ -52,11 +55,7 @@ params.basename = [
 
 params.genomes_directory = [
     params.database_directory,
-    "genomes",
-    params.source_database,
-    "release_${params.release}",
-    params.species,
-    params.assembly
+    "genomes"
 ].join("/")
 
 include {
@@ -83,7 +82,7 @@ include {
 
 workflow {
 
-    if ( params.fasta_url && params.gtf_url ) {
+    if ( params.run_reference_data_ingestion ) {
 
         // fetch reference genome sequence
         fasta = get_reference_fasta(params.fasta_url)
@@ -147,10 +146,12 @@ workflow {
     }
 
     // create RSEM indices
-    rsem_idx = rsem_prepare_reference(fasta, gtf)
+    if ( params.run_rsem_prepare_reference ) {
+        rsem_idx = rsem_prepare_reference(fasta, gtf)
+    }
 
     // create STAR alignment indices
-    if ( params.star_read_lengths ) {
+    if ( params.run_star_indexing ) {
         star_read_lengths = Channel
             .fromList(params.star_read_lengths.toString().replaceAll("\\s", "").tokenize(","))
         star_idx = generate_star_index(
