@@ -1,13 +1,11 @@
 
 genomes_directory = params.genomes_directory
-basename = params.basename
 picard_jar = "/working/software/picard.jar"
 
 process get_reference_fasta {
     publishDir "${genomes_directory}/fasta", \
         pattern: "reference.fa.gz.url", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.fa.gz.url" }
+        mode: "copy", overwrite: true
 
     input:
     val(fasta_url)
@@ -41,16 +39,15 @@ process extract_primary_assembly {
 
 process normalize_fasta {
     publishDir "${genomes_directory}/fasta", \
-        pattern: "normalized.fa.gz", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.fa.gz" }
+        pattern: "reference.fa.gz", \
+        mode: "copy", overwrite: true
 
     input:
     path(fasta)
 
     output:
     path("normalized.fa")
-    path("normalized.fa.gz")
+    path("reference.fa.gz")
 
     """
     java -jar ${picard_jar} \
@@ -60,31 +57,26 @@ process normalize_fasta {
         --LINE_LENGTH 60 \
         --USE_JDK_DEFLATER true \
         --USE_JDK_INFLATER true
-    bgzip -c normalized.fa > normalized.fa.gz
+    bgzip -c normalized.fa > reference.fa.gz
     """
 }
 
 process index_fasta {
     publishDir "${genomes_directory}/fasta", \
-        pattern: "normalized.fa.gz.fai", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.fa.gz.fai" }
-    publishDir "${genomes_directory}/fasta", \
-        pattern: "normalized.fa.gz.gzi", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.fa.gz.gzi" }
+        pattern: "reference.fa.gz.{fai,gzi}", \
+        mode: "copy", overwrite: true
 
     input:
     path(fasta)
 
     output:
-    path("normalized.fa.gz.fai")
-    path("normalized.fa.gz.gzi")
+    path("reference.fa.gz.fai")
+    path("reference.fa.gz.gzi")
 
     """
     samtools faidx \
-    --fai-idx normalized.fa.gz.fai  \
-    --gzi-idx normalized.fa.gz.gzi \
+    --fai-idx reference.fa.gz.fai  \
+    --gzi-idx reference.fa.gz.gzi \
     ${fasta}
     """
 }
@@ -92,8 +84,7 @@ process index_fasta {
 process create_sequence_dictionary {
     publishDir "${genomes_directory}/fasta", \
         pattern: "reference.dict", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.dict" }
+        mode: "copy", overwrite: true
 
     input:
     path(fasta)
@@ -115,13 +106,8 @@ process create_sequence_dictionary {
 
 process get_reference_gtf {
     publishDir "${genomes_directory}/gtf", \
-        pattern: "reference.gtf.gz", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.gtf.gz" }
-    publishDir "${genomes_directory}/gtf", \
-        pattern: "reference.gtf.gz.url", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.gtf.gz.url" }
+        pattern: "reference.gtf.gz{.url,}", \
+        mode: "copy", overwrite: true
 
     input:
     val(gtf_url)
@@ -132,44 +118,44 @@ process get_reference_gtf {
     path("reference.gtf.gz.url")
 
     """
-    wget -O reference.gtf.gz "${gtf_url}"
+    wget -O - "${gtf_url}" | \
+    gunzip -c | \
+    grep -E "^(#|22)" > reference.gtf
     echo "${gtf_url}" > reference.gtf.gz.url
-    gunzip -c reference.gtf.gz > reference.gtf
+    gzip -c reference.gtf > reference.gtf.gz
     """
 }
 
 process reduce_gtf {
     publishDir "${genomes_directory}/gtf", \
         pattern: "reduced.gtf.gz", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.reduced.gtf.gz" }
+        mode: "copy", overwrite: true
 
     input:
     path(gtf)
     path(dict)
 
     output:
-    path("reduced.gtf")
-    path("reduced.gtf.gz")
+    path("reference.reduced.gtf")
+    path("reference.reduced.gtf.gz")
 
     """
     ReduceGtf \
     SEQUENCE_DICTIONARY=${dict} \
     GTF=${gtf} \
-    OUTPUT=reduced.gtf \
+    OUTPUT=reference.reduced.gtf \
     ENHANCE_GTF=true \
     USE_JDK_DEFLATER=true \
     USE_JDK_INFLATER=true
 
-    gzip -c reduced.gtf > reduced.gtf.gz
+    gzip -c reference.reduced.gtf > reference.reduced.gtf.gz
     """
 }
 
 process gtf_to_refFlat {
     publishDir "${genomes_directory}/gtf", \
         pattern: "reference.refFlat", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.refFlat" }
+        mode: "copy", overwrite: true
 
     input:
     path(gtf)
@@ -189,8 +175,7 @@ process gtf_to_refFlat {
 process gtf_to_bed {
     publishDir "${genomes_directory}/bed", \
         pattern: "reference.bed.gz", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.bed.gz" }
+        mode: "copy", overwrite: true
 
     input:
     path(gtf)
@@ -212,151 +197,143 @@ process gtf_to_bed {
 
 process extract_genes {
     publishDir "${genomes_directory}/bed", \
-        pattern: "genes.bed.gz", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.genes.bed.gz" }
+        pattern: "reference.genes.bed.gz", \
+        mode: "copy", overwrite: true
 
     input:
     path(bed)
 
     output:
-    path("genes.bed")
-    path("genes.bed.gz")
+    path("reference.genes.bed")
+    path("reference.genes.bed.gz")
 
     """
-    awk '\$13 == "gene"' ${bed} > genes.bed
-    gzip -c genes.bed > genes.bed.gz
+    awk '\$13 == "gene"' ${bed} > reference.genes.bed
+    gzip -c reference.genes.bed > reference.genes.bed.gz
     """
 }
 
 process extract_exons {
     publishDir "${genomes_directory}/bed", \
-        pattern: "exons.bed.gz", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.exons.bed.gz" }
+        pattern: "reference.exons.bed.gz", \
+        mode: "copy", overwrite: true
 
     input:
     path(bed)
 
     output:
-    path("exons.bed")
-    path("exons.bed.gz")
+    path("reference.exons.bed")
+    path("reference.exons.bed.gz")
 
     """
-    awk '\$13 == "exon"' ${bed} > exons.bed
-    gzip -c exons.bed > exons.bed.gz
+    awk '\$13 == "exon"' ${bed} > reference.exons.bed
+    gzip -c reference.exons.bed > reference.exons.bed.gz
     """
 }
 
 process extract_CDS {
     publishDir "${genomes_directory}/bed", \
-        pattern: "CDS.bed.gz", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.CDS.bed.gz" }
+        pattern: "reference.CDS.bed.gz", \
+        mode: "copy", overwrite: true
 
     input:
     path(bed)
 
     output:
-    path("CDS.bed")
-    path("CDS.bed.gz")
+    path("reference.CDS.bed")
+    path("reference.CDS.bed.gz")
 
     """
-    awk '\$13 == "CDS"' ${bed} > CDS.bed
-    gzip -c CDS.bed > CDS.bed.gz
+    awk '\$13 == "CDS"' ${bed} > reference.CDS.bed
+    gzip -c reference.CDS.bed > reference.CDS.bed.gz
     """
 }
 
 process extract_rRNA_genes {
     publishDir "${genomes_directory}/bed", \
-        pattern: "genes.rRNA.bed.gz", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.genes.rRNA.bed.gz" }
+        pattern: "reference.genes.rRNA.bed.gz", \
+        mode: "copy", overwrite: true
 
     input:
     path(bed)
 
     output:
-    path("genes.rRNA.bed")
-    path("genes.rRNA.bed.gz")
+    path("reference.genes.rRNA.bed")
+    path("reference.genes.rRNA.bed.gz")
 
     """
     grep -E 'gene_(bio)?type "rRNA(_pseudogene)?"' ${bed} | \
-    awk '\$13 == "gene"' > genes.rRNA.bed
-    gzip -c genes.rRNA.bed > genes.rRNA.bed.gz
+    awk '\$13 == "gene"' > reference.genes.rRNA.bed
+    gzip -c reference.genes.rRNA.bed > reference.genes.rRNA.bed.gz
     """
 }
 
 process extract_MT_genes {
     publishDir "${genomes_directory}/bed", \
-        pattern: "genes.MT.bed.gz", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.genes.MT.bed.gz" }
+        pattern: "reference.genes.MT.bed.gz", \
+        mode: "copy", overwrite: true
     
     input:
     path(bed)
 
     output:
-    path("genes.MT.bed")
-    path("genes.MT.bed.gz")
+    path("reference.genes.MT.bed")
+    path("reference.genes.MT.bed.gz")
 
     """
     sed 's/^chr//' ${bed} | \
     grep -E '^(M|MT)\t' | \
-    awk '\$13 == "gene"' > genes.MT.bed
-    gzip -c genes.MT.bed > genes.MT.bed.gz
+    awk '\$13 == "gene"' > reference.genes.MT.bed
+    gzip -c reference.genes.MT.bed > reference.genes.MT.bed.gz
     """
 }
 
 process extract_intronic_regions {
     publishDir "${genomes_directory}/bed", \
-        pattern: "intronic.bed.gz", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.intronic.bed.gz" }
+        pattern: "reference.intronic.bed.gz", \
+        mode: "copy", overwrite: true
 
     input:
     path(genes_bed)
     path(exons_bed)
 
     output:
-    path("intronic.bed")
-    path("intronic.bed.gz")
+    path("reference.intronic.bed")
+    path("reference.intronic.bed.gz")
 
     """
     bedtools merge -i ${exons_bed} -s | \
-    bedtools subtract -a ${genes_bed} -b stdin -s > intronic.bed
-    gzip -c intronic.bed > intronic.bed.gz
+    bedtools subtract -a ${genes_bed} -b stdin -s > reference.intronic.bed
+    gzip -c reference.intronic.bed > reference.intronic.bed.gz
     """
 }
 
 process extract_intergenic_regions {
     publishDir "${genomes_directory}/bed", \
-        pattern: "intergenic.bed.gz", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.intergenic.bed.gz" }
+        pattern: "reference.intergenic.bed.gz", \
+        mode: "copy", overwrite: true
 
     input:
     path(genes_bed)
     path(fasta_fai)
 
     output:
-    path("intergenic.bed")
-    path("intergenic.bed.gz")
+    path("reference.intergenic.bed")
+    path("reference.intergenic.bed.gz")
 
     """
     awk -v OFS=\$'\t' '{print \$1,\$2}' ${fasta_fai} | \
     sort -k1V > chr_sizes.tsv
 
-    bedtools complement -i ${genes_bed} -g chr_sizes.tsv > intergenic.bed
-    gzip -c intergenic.bed > intergenic.bed.gz
+    bedtools complement -i ${genes_bed} -g chr_sizes.tsv > reference.intergenic.bed
+    gzip -c reference.intergenic.bed > reference.intergenic.bed.gz
     """
 }
 
 process bed_to_interval_list {
     publishDir "${genomes_directory}/interval-list", \
         pattern: "*.interval_list", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.${filename}" }
+        mode: "copy", overwrite: true
 
     input:
     path(dict)
@@ -369,231 +346,33 @@ process bed_to_interval_list {
     path(intergenic_bed)
     
     output:
-    path("genes.interval_list")
-    path("exons.interval_list")
-    path("CDS.interval_list")
-    path("genes.rRNA.interval_list")
-    path("genes.MT.interval_list")
-    path("intronic.interval_list")
-    path("intergenic.interval_list")
+    path("reference.genes.interval_list")
+    path("reference.exons.interval_list")
+    path("reference.CDS.interval_list")
+    path("reference.genes.rRNA.interval_list")
+    path("reference.genes.MT.interval_list")
+    path("reference.intronic.interval_list")
+    path("reference.intergenic.interval_list")
 
     """
-    java -jar ${picard_jar} \
-        BedToIntervalList \
-        --INPUT ${genes_bed} \
-        --OUTPUT genes.interval_list \
-        --SEQUENCE_DICTIONARY ${dict} \
-        --USE_JDK_DEFLATER true \
-        --USE_JDK_INFLATER true
-
-    java -jar ${picard_jar} \
-        BedToIntervalList \
-        --INPUT ${exons_bed} \
-        --OUTPUT exons.interval_list \
-        --SEQUENCE_DICTIONARY ${dict} \
-        --USE_JDK_DEFLATER true \
-        --USE_JDK_INFLATER true
-
-    java -jar ${picard_jar} \
-        BedToIntervalList \
-        --INPUT ${CDS_bed} \
-        --OUTPUT CDS.interval_list \
-        --SEQUENCE_DICTIONARY ${dict} \
-        --USE_JDK_DEFLATER true \
-        --USE_JDK_INFLATER true
-
-    java -jar ${picard_jar} \
-        BedToIntervalList \
-        --INPUT ${rRNA_bed} \
-        --OUTPUT genes.rRNA.interval_list \
-        --SEQUENCE_DICTIONARY ${dict} \
-        --USE_JDK_DEFLATER true \
-        --USE_JDK_INFLATER true
-
-    java -jar ${picard_jar} \
-        BedToIntervalList \
-        --INPUT ${MT_bed} \
-        --OUTPUT genes.MT.interval_list \
-        --SEQUENCE_DICTIONARY ${dict} \
-        --USE_JDK_DEFLATER true \
-        --USE_JDK_INFLATER true
-
-    java -jar ${picard_jar} \
-        BedToIntervalList \
-        --INPUT ${intronic_bed} \
-        --OUTPUT intronic.interval_list \
-        --SEQUENCE_DICTIONARY ${dict} \
-        --USE_JDK_DEFLATER true \
-        --USE_JDK_INFLATER true
-
-    java -jar ${picard_jar} \
-        BedToIntervalList \
-        --INPUT ${intergenic_bed} \
-        --OUTPUT intergenic.interval_list \
-        --SEQUENCE_DICTIONARY ${dict} \
-        --USE_JDK_DEFLATER true \
-        --USE_JDK_INFLATER true
-    """
-}
-
-process rsem_prepare_reference {
-    cpus Runtime.runtime.availableProcessors()
-
-    publishDir "${genomes_directory}/rsem",
-        mode: "copy", overwrite: true, \
-        pattern: "rsem_index/", \
-        saveAs: { filename -> "${basename}.${params.rsem_star_sjdb_overhang}_overhang.rsem_idx/" }
-    /*publishDir "${genomes_directory}/rsem", \
-        mode: "copy", overwrite: true, \
-        pattern: "rsem.chrlist",
-        saveAs: { filename -> "${basename}.chrlist" }
-    publishDir "${genomes_directory}/rsem", \
-        mode: "copy", overwrite: true, \
-        pattern: "rsem.grp",
-        saveAs: { filename -> "${basename}.grp" }
-    publishDir "${genomes_directory}/rsem", \
-        mode: "copy", overwrite: true, \
-        pattern: "rsem.idx.fa",
-        saveAs: { filename -> "${basename}.idx.fa" }
-    publishDir "${genomes_directory}/rsem", \
-        mode: "copy", overwrite: true, \
-        pattern: "rsem.n2g.idx.fa",
-        saveAs: { filename -> "${basename}.n2g.idx.fa" }
-    publishDir "${genomes_directory}/rsem", \
-        mode: "copy", overwrite: true, \
-        pattern: "rsem.seq",
-        saveAs: { filename -> "${basename}.seq" }
-    publishDir "${genomes_directory}/rsem", \
-        mode: "copy", overwrite: true, \
-        pattern: "rsem.ti",
-        saveAs: { filename -> "${basename}.ti" }
-    publishDir "${genomes_directory}/rsem", \
-        mode: "copy", overwrite: true, \
-        pattern: "rsem.transcripts.fa",
-        saveAs: { filename -> "${basename}.transcripts.fa" }*/
-
-    input:
-    path(fasta)
-    path(gtf)
-
-    output:
-    path("rsem_index/")
-    /*path("rsem.chrlist")
-    path("rsem.grp")
-    path("rsem.idx.fa")
-    path("rsem.n2g.idx.fa")
-    path("rsem.seq")
-    path("rsem.ti")
-    path("rsem.transcripts.fa")*/
-
-    """
-    gunzip -c ${fasta} > reference.fa
-    gunzip -c ${gtf} > reference.gtf
-    rsem-prepare-reference \
-        --gtf reference.gtf \
-        reference.fa rsem_index/
-    """
-}
-
-process generate_star_index {
-    cpus Runtime.runtime.availableProcessors()
-
-    publishDir "${genomes_directory}/star", \
-        pattern: "reference.star_idx.cmd", \
-        mode: "copy", overwrite: true, \
-        saveAs: { filename -> "${basename}.star_idx.cmd" }
-    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
-        pattern: "reference.star_idx/Genome", \
-        mode: "copy", overwrite: true
-    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
-        pattern: "reference.star_idx/Log.out", \
-        mode: "copy", overwrite: true
-    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
-        pattern: "reference.star_idx/SA", \
-        mode: "copy", overwrite: true
-    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
-        pattern: "reference.star_idx/SAindex", \
-        mode: "copy", overwrite: true
-    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
-        pattern: "reference.star_idx/chrLength.txt", \
-        mode: "copy", overwrite: true
-    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
-        pattern: "reference.star_idx/chrName.txt", \
-        mode: "copy", overwrite: true
-    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
-        pattern: "reference.star_idx/chrNameLength.txt", \
-        mode: "copy", overwrite: true
-    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
-        pattern: "reference.star_idx/chrStart.txt", \
-        mode: "copy", overwrite: true
-    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
-        pattern: "reference.star_idx/exonGeTrInfo.tab", \
-        mode: "copy", overwrite: true
-    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
-        pattern: "reference.star_idx/exonInfo.tab", \
-        mode: "copy", overwrite: true
-    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
-        pattern: "reference.star_idx/geneInfo.tab", \
-        mode: "copy", overwrite: true
-    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
-        pattern: "reference.star_idx/genomeParameters.txt", \
-        mode: "copy", overwrite: true
-    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
-        pattern: "reference.star_idx/sjdbInfo.txt", \
-        mode: "copy", overwrite: true
-    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
-        pattern: "reference.star_idx/sjdbList.fromGTF.out.tab", \
-        mode: "copy", overwrite: true
-    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
-        pattern: "reference.star_idx/sjdbList.out.tab", \
-        mode: "copy", overwrite: true
-    publishDir "${genomes_directory}/star/${basename}.${read_length}_bp.star_idx", \
-        pattern: "reference.star_idx/transcriptInfo.tab", \
-        mode: "copy", overwrite: true
-
-    input:
-    path(fasta)
-    path(gtf)
-    val(read_length)
-
-    output:
-    path("reference.star_idx.cmd")
-    path("reference.star_idx/Genome")
-    path("reference.star_idx/Log.out")
-    path("reference.star_idx/SA")
-    path("reference.star_idx/SAindex")
-    path("reference.star_idx/chrLength.txt")
-    path("reference.star_idx/chrName.txt")
-    path("reference.star_idx/chrNameLength.txt")
-    path("reference.star_idx/chrStart.txt")
-    path("reference.star_idx/exonGeTrInfo.tab")
-    path("reference.star_idx/exonInfo.tab")
-    path("reference.star_idx/geneInfo.tab")
-    path("reference.star_idx/genomeParameters.txt")
-    path("reference.star_idx/sjdbInfo.txt")
-    path("reference.star_idx/sjdbList.fromGTF.out.tab")
-    path("reference.star_idx/sjdbList.out.tab")
-    path("reference.star_idx/transcriptInfo.tab")
-
-    """
-    gunzip -c ${fasta} > reference.fa
-    gunzip -c ${gtf} > reference.gtf
-    cmd=\$(cat <<-EOF
-    STAR \
-        --runThreadN ${task.cpus} \
-        --runMode genomeGenerate \
-        --genomeDir reference.star_idx/ \
-        --genomeFastaFiles reference.fa \
-        --sjdbGTFfile reference.gtf \
-        --sjdbOverhang \$((${read_length} - 1)) \
-        --genomeSAindexNbases ${params.star_genomeSAindexNbases} \
-        --limitGenomeGenerateRAM 200000000000
-    EOF
+    declare -A files=(
+        [genes]=${genes_bed}
+        [exons]=${exons_bed}
+        [CDS]=${CDS_bed}
+        [genes.rRNA]=${rRNA_bed}
+        [genes.MT]=${MT_bed}
+        [intronic]=${intronic_bed}
+        [intergenic]=${intergenic_bed}
     )
-    eval \$cmd
-    echo \$cmd >> reference.star_idx.cmd
+    
+    for name in "\${!files[@]}"; do
+        java -jar ${picard_jar} \
+            BedToIntervalList \
+            --INPUT \${files[\$name]} \
+            --OUTPUT reference.\${name}.interval_list \
+            --SEQUENCE_DICTIONARY ${dict} \
+            --USE_JDK_DEFLATER true \
+            --USE_JDK_INFLATER true
+    done
     """
 }
-
-
-

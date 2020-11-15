@@ -46,16 +46,13 @@ if ( params.run_reference_data_ingestion ) {
     }
 }
 
-params.basename = [
+params.genomes_directory = [
+    params.database_directory,
+    "genomes",
     params.source_database,
     "release_${params.release}",
     params.species,
     params.assembly
-].join(".") 
-
-params.genomes_directory = [
-    params.database_directory,
-    "genomes"
 ].join("/")
 
 include {
@@ -76,9 +73,13 @@ include {
     extract_intronic_regions;
     extract_intergenic_regions;
     bed_to_interval_list;
-    rsem_prepare_reference;
-    generate_star_index
 } from './genomes.nf'
+
+include {
+    rsem_prepare_reference;
+    rsem_prepare_reference_with_star;
+    generate_star_index
+} from './indices.nf'
 
 workflow {
 
@@ -140,22 +141,30 @@ workflow {
     } else {
         // read fasta and gtf files from database 
         fasta = Channel.fromPath(
-            "${params.genomes_directory}/fasta/${params.basename}.fa.gz")
+            "${params.genomes_directory}/fasta/reference.fa.gz")
         gtf = Channel.fromPath(
-            "${params.genomes_directory}/gtf/${params.basename}.gtf.gz")
+            "${params.genomes_directory}/gtf/reference.gtf.gz")
     }
 
     // create RSEM indices
     if ( params.run_rsem_prepare_reference ) {
-        rsem_idx = rsem_prepare_reference(fasta, gtf)
+        if ( params.rsem_with_star ) {
+            star_sjdb_overhang = Channel.fromList(
+                params.rsem_star_sjdb_overhang.toString().replaceAll("\\s", "").tokenize(","))
+            rsem_idx = rsem_prepare_reference_with_star(
+                fasta, gtf, star_sjdb_overhang)
+        } else {
+            rsem_idx = rsem_prepare_reference(
+                fasta, gtf)
+        }
     }
 
     // create STAR alignment indices
     if ( params.run_star_indexing ) {
-        star_read_lengths = Channel
-            .fromList(params.star_read_lengths.toString().replaceAll("\\s", "").tokenize(","))
+        star_sjdb_overhang = Channel
+            .fromList(params.star_sjdb_overhang.toString().replaceAll("\\s", "").tokenize(","))
         star_idx = generate_star_index(
-            fasta, gtf, star_read_lengths)
+            fasta, gtf, star_sjdb_overhang)
     }
 
 }
