@@ -50,7 +50,7 @@ params.genomes_directory = [
     params.database_directory,
     "genomes",
     params.source_database,
-    "release_${params.release}",
+    "release-${params.release}",
     params.species,
     params.assembly
 ].join("/")
