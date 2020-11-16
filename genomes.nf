@@ -122,10 +122,10 @@ process get_reference_gtf {
     gunzip -c | \
     awk -v FS=\$'\t' -v OFS=\$'\t' '
         { printf \$0; }
-        ((\$3=="gene") || (\$3=="transcript") || (\$3=="exon")) && (\$0 !~ /gene_name/) { 
+        ((\$3=="gene") || (\$3=="transcript") || (\$3=="exon") || (\$3=="CDS")) && (\$0 !~ /gene_name/) { 
             printf " gene_name \\"NA\\";"; 
         }
-        ((\$3=="transcript") || (\$3=="exon")) && (\$0 !~ /transcript_name/) {
+        ((\$3=="transcript") || (\$3=="exon") || (\$3=="CDS")) && (\$0 !~ /transcript_name/) {
             printf " transcript_name \\"NA\\";";
         }
         { print "" }
