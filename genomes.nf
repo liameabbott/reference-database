@@ -121,10 +121,12 @@ process get_reference_gtf {
     wget -O - "${gtf_url}" | \
     gunzip -c | \
     awk '{
-        if ( (\$3=="gene") && !/gene_name/ ) { 
-            print \$0" gene_name \\"NA\\";"; 
-        } else {
-            print \$0;
+        { print \$0; }
+        ((\$3=="gene") || (\$3=="transcript")) && !/gene_name/ { 
+            print " gene_name \\"NA\\";"; 
+        }
+        (\$3=="transcript) && !/transcript_name/ {
+            print " transcript_name \\"NA\\";";
         }
     }' > reference.gtf
     gzip -c reference.gtf > reference.gtf.gz
