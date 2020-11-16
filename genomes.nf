@@ -118,11 +118,8 @@ process get_reference_gtf {
     path("reference.gtf.gz.url")
 
     """
-    wget -O - "${gtf_url}" | \
-    gunzip -c | \
-    grep -E "^(#|22)" > reference.gtf
-    echo "${gtf_url}" > reference.gtf.gz.url
-    gzip -c reference.gtf > reference.gtf.gz
+    wget -O reference.gtf.gz "${gtf_url}"
+    gunzip -c reference.gtf.gz > reference.gtf
     """
 }
 
