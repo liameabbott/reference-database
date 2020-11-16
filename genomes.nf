@@ -120,7 +120,7 @@ process get_reference_gtf {
     """
     wget -O - "${gtf_url}" | \
     gunzip -c | \
-    awk '
+    awk -v FS=\$'\t' -v OFS=\$'\t' '
         { print \$0; }
         ((\$3=="gene") || (\$3=="transcript")) && (\$0 !~ /gene_name/) { 
             print " gene_name \\"NA\\";"; 
