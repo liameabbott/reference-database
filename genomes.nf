@@ -125,9 +125,6 @@ process get_reference_gtf {
         ((\$3=="gene") || (\$3=="transcript")) && (\$0 !~ /gene_name/) { 
             print " gene_name \\"NA\\";"; 
         }
-        (\$3=="transcript") && (\$0 !~ /transcript_name/) {
-            print " transcript_name \\"NA\\";";
-        }
     ' > reference.gtf
     gzip -c reference.gtf > reference.gtf.gz
     printf "${gtf_url}" > reference.gtf.gz.url
