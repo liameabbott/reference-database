@@ -125,7 +125,7 @@ process get_reference_gtf {
         ((\$3=="gene") || (\$3=="transcript")) && !/gene_name/ { 
             print " gene_name \\"NA\\";"; 
         }
-        (\$3=="transcript) && !/transcript_name/ {
+        (\$3=="transcript") && !/transcript_name/ {
             print " transcript_name \\"NA\\";";
         }
     }' > reference.gtf
