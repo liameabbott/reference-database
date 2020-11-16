@@ -120,6 +120,7 @@ process get_reference_gtf {
     """
     wget -O reference.gtf.gz "${gtf_url}"
     gunzip -c reference.gtf.gz > reference.gtf
+    printf "${gtf_url}" > reference.gtf.gz.url
     """
 }
 
