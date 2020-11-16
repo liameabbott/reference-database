@@ -122,7 +122,7 @@ process get_reference_gtf {
     gunzip -c | \
     awk '
         (\$3=="gene") && !/gene_name/ { 
-            print \$0," gene_name "NA" }' > reference.gtf
+            print \$0," gene_name \"NA\";" }' > reference.gtf
     gzip -c reference.gtf > reference.gtf.gz
     printf "${gtf_url}" > reference.gtf.gz.url
     """
