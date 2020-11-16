@@ -106,7 +106,7 @@ workflow {
         gtf = get_reference_gtf(params.gtf_url)
 
         // parse GTF into reduced and refFlat formats
-        reduced_gtf = reduce_gtf(gtf[0], dict)[0]
+        //reduced_gtf = reduce_gtf(gtf[0], dict)[0]
         refflat = gtf_to_refFlat(gtf[0], dict)[0]
 
         // parse annotations into BED format
