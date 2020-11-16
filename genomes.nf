@@ -118,8 +118,12 @@ process get_reference_gtf {
     path("reference.gtf.gz.url")
 
     """
-    wget -O reference.gtf.gz "${gtf_url}"
-    gunzip -c reference.gtf.gz > reference.gtf
+    wget -O - "${gtf_url}" | \
+    gunzip -c | \
+    awk '
+        ($3=="gene") && !/gene_name/ { 
+            print $0," gene_name "NA" }' > reference.gtf
+    gzip -c reference.gtf > reference.gtf.gz
     printf "${gtf_url}" > reference.gtf.gz.url
     """
 }
