@@ -111,6 +111,7 @@ process get_reference_gtf {
 
     input:
     val(gtf_url)
+    path(fasta_fai)
 
     output:
     path("reference.gtf")
@@ -121,19 +122,24 @@ process get_reference_gtf {
     wget -O - "${gtf_url}" | \
     gunzip -c | \
     awk -v FS=\$'\t' -v OFS=\$'\t' '
-        (\$0 ~ /^#/) { next; }
-        { gsub(/%/, "%%"); }
-        { gsub(/gene \\"/, "gene_name \\""); }
-        (\$3=="gene") { gsub(/transcript_id \\"\\"/, ""); }
-        { printf \$0; }
-        (\$0 !~ /gene_name/) { 
-            printf " gene_name \\"NA\\";"; 
+        (NR==FNR) { a[$1]++; next; }
+        (\$0 ~ /^#/) { print \$0; next; }
+        ($1 in a) { 
+            gsub(/%/, "%%");
+            gsub(/gene \\"/, "gene_name \\"");
+            if (\$3=="gene") { 
+                gsub(/transcript_id \\"\\"/, "");
+            }
+            printf \$0;
+            if (\$0 !~ /gene_name/) { 
+                printf " gene_name \\"NA\\";"; 
+            }
+            if ((\$3!="gene") && (\$0 !~ /transcript_name/)) {
+                printf " transcript_name \\"NA\\";";
+            }
+            print "";
         }
-        (\$3!="gene") && (\$0 !~ /transcript_name/) {
-            printf " transcript_name \\"NA\\";";
-        }
-        { print "" }
-    ' > reference.gtf
+    ' ${fasta_fai} - > reference.gtf
     gzip -c reference.gtf > reference.gtf.gz
     printf "${gtf_url}" > reference.gtf.gz.url
     """
