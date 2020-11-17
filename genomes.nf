@@ -121,10 +121,12 @@ process get_reference_gtf {
     wget -O - "${gtf_url}" | \
     gunzip -c | \
     awk -v FS=\$'\t' -v OFS=\$'\t' '
-        { gsub(/%/, "%%"); gsub(/gene \\"/, "gene_name \\""); gsub(/:/, "|"); printf \$0; }
+        { gsub(/%/, "%%"); gsub(/gene \\"/, "gene_name \\""); printf \$0; }
+        (\$0 ~ /^#/) { next; }
         (\$0 !~ /gene_name/) { 
             printf " gene_name \\"NA\\";"; 
         }
+        (\$3=="gene") { gsub(/transcript_id \\"\\"/, ""); }
         (\$3!="gene") && (\$0 !~ /transcript_name/) {
             printf " transcript_name \\"NA\\";";
         }
