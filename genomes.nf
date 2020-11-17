@@ -121,7 +121,7 @@ process get_reference_gtf {
     wget -O - "${gtf_url}" | \
     gunzip -c | \
     awk -v FS=\$'\t' -v OFS=\$'\t' '
-        { printf \$0; }
+        { gsub(/%/, "\%"); printf \$0; }
         (\$0 !~ /gene_name/) { 
             printf " gene_name \\"NA\\";"; 
         }
