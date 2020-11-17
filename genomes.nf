@@ -124,7 +124,7 @@ process get_reference_gtf {
     awk -v FS=\$'\t' -v OFS=\$'\t' '
         (NR==FNR) { a[\$1]++; next; }
         (\$0 ~ /^#/) { print \$0; next; }
-        ($1 in a) { 
+        (\$1 in a) { 
             gsub(/%/, "%%");
             gsub(/gene \\"/, "gene_name \\"");
             if (\$3=="gene") { 
