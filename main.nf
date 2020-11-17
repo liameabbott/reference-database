@@ -103,7 +103,7 @@ workflow {
         dict = create_sequence_dictionary(fasta[0])
 
         // fetch reference genome annotation
-        gtf = get_reference_gtf(params.gtf_url)
+        gtf = get_reference_gtf(params.gtf_url, fasta_index[0])
 
         // parse GTF into reduced and refFlat formats
         reduced_gtf = reduce_gtf(gtf[0], dict)[0]

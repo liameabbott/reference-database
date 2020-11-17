@@ -122,7 +122,7 @@ process get_reference_gtf {
     wget -O - "${gtf_url}" | \
     gunzip -c | \
     awk -v FS=\$'\t' -v OFS=\$'\t' '
-        (NR==FNR) { a[$1]++; next; }
+        (NR==FNR) { a[\$1]++; next; }
         (\$0 ~ /^#/) { print \$0; next; }
         ($1 in a) { 
             gsub(/%/, "%%");
