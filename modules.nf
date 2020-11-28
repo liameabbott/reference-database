@@ -1,9 +1,6 @@
 
-genomes_directory = params.genomes_directory
-picard_jar = "/working/software/picard.jar"
-
 process get_reference_fasta {
-    publishDir "${genomes_directory}/fasta", \
+    publishDir "${params.genomes_directory}/fasta", \
         pattern: "reference.fa.gz.url", \
         mode: "copy", overwrite: true
 
@@ -38,7 +35,7 @@ process extract_primary_assembly {
 }
 
 process normalize_fasta {
-    publishDir "${genomes_directory}/fasta", \
+    publishDir "${params.genomes_directory}/fasta", \
         pattern: "reference.fa.gz", \
         mode: "copy", overwrite: true
 
@@ -50,19 +47,19 @@ process normalize_fasta {
     path("reference.fa.gz")
 
     """
-    java -jar ${picard_jar} \
-        NormalizeFasta \
-        --INPUT ${fasta} \
-        --OUTPUT normalized.fa \
-        --LINE_LENGTH 60 \
-        --USE_JDK_DEFLATER true \
-        --USE_JDK_INFLATER true
+    picard NormalizeFasta \
+    --INPUT ${fasta} \
+    --OUTPUT normalized.fa \
+    --LINE_LENGTH 60 \
+    --USE_JDK_DEFLATER true \
+    --USE_JDK_INFLATER true
+    
     bgzip -c normalized.fa > reference.fa.gz
     """
 }
 
 process index_fasta {
-    publishDir "${genomes_directory}/fasta", \
+    publishDir "${params.genomes_directory}/fasta", \
         pattern: "reference.fa.gz.{fai,gzi}", \
         mode: "copy", overwrite: true
 
@@ -82,7 +79,7 @@ process index_fasta {
 }
 
 process create_sequence_dictionary {
-    publishDir "${genomes_directory}/fasta", \
+    publishDir "${params.genomes_directory}/fasta", \
         pattern: "reference.dict", \
         mode: "copy", overwrite: true
 
@@ -93,19 +90,18 @@ process create_sequence_dictionary {
     path("reference.dict")
 
     """
-    java -jar ${picard_jar} \
-        CreateSequenceDictionary \
-        --REFERENCE ${fasta} \
-        --OUTPUT reference.dict \
-        --SPECIES ${params.species} \
-        --GENOME_ASSEMBLY ${params.assembly} \
-        --USE_JDK_DEFLATER true \
-        --USE_JDK_INFLATER true
+    picard CreateSequenceDictionary \
+    --REFERENCE ${fasta} \
+    --OUTPUT reference.dict \
+    --SPECIES ${params.species} \
+    --GENOME_ASSEMBLY ${params.assembly} \
+    --USE_JDK_DEFLATER true \
+    --USE_JDK_INFLATER true
      """
 }
 
 process get_reference_gtf {
-    publishDir "${genomes_directory}/gtf", \
+    publishDir "${params.genomes_directory}/gtf", \
         pattern: "reference.gtf.gz{.url,}", \
         mode: "copy", overwrite: true
 
@@ -146,8 +142,8 @@ process get_reference_gtf {
 }
 
 process reduce_gtf {
-    publishDir "${genomes_directory}/gtf", \
-        pattern: "reduced.gtf.gz", \
+    publishDir "${params.genomes_directory}/gtf", \
+        pattern: "reference.reduced.gtf.gz", \
         mode: "copy", overwrite: true
 
     input:
@@ -172,7 +168,7 @@ process reduce_gtf {
 }
 
 process gtf_to_refFlat {
-    publishDir "${genomes_directory}/gtf", \
+    publishDir "${params.genomes_directory}/gtf", \
         pattern: "reference.refFlat", \
         mode: "copy", overwrite: true
 
@@ -192,7 +188,7 @@ process gtf_to_refFlat {
 }
 
 process gtf_to_bed {
-    publishDir "${genomes_directory}/bed", \
+    publishDir "${params.genomes_directory}/bed", \
         pattern: "reference.bed.gz", \
         mode: "copy", overwrite: true
 
@@ -215,7 +211,7 @@ process gtf_to_bed {
 }
 
 process extract_genes {
-    publishDir "${genomes_directory}/bed", \
+    publishDir "${params.genomes_directory}/bed", \
         pattern: "reference.genes.bed.gz", \
         mode: "copy", overwrite: true
 
@@ -233,7 +229,7 @@ process extract_genes {
 }
 
 process extract_exons {
-    publishDir "${genomes_directory}/bed", \
+    publishDir "${params.genomes_directory}/bed", \
         pattern: "reference.exons.bed.gz", \
         mode: "copy", overwrite: true
 
@@ -251,7 +247,7 @@ process extract_exons {
 }
 
 process extract_CDS {
-    publishDir "${genomes_directory}/bed", \
+    publishDir "${params.genomes_directory}/bed", \
         pattern: "reference.CDS.bed.gz", \
         mode: "copy", overwrite: true
 
@@ -269,7 +265,7 @@ process extract_CDS {
 }
 
 process extract_rRNA_genes {
-    publishDir "${genomes_directory}/bed", \
+    publishDir "${params.genomes_directory}/bed", \
         pattern: "reference.genes.rRNA.bed.gz", \
         mode: "copy", overwrite: true
 
@@ -288,7 +284,7 @@ process extract_rRNA_genes {
 }
 
 process extract_MT_genes {
-    publishDir "${genomes_directory}/bed", \
+    publishDir "${params.genomes_directory}/bed", \
         pattern: "reference.genes.MT.bed.gz", \
         mode: "copy", overwrite: true
     
@@ -308,7 +304,7 @@ process extract_MT_genes {
 }
 
 process extract_intronic_regions {
-    publishDir "${genomes_directory}/bed", \
+    publishDir "${params.genomes_directory}/bed", \
         pattern: "reference.intronic.bed.gz", \
         mode: "copy", overwrite: true
 
@@ -328,7 +324,7 @@ process extract_intronic_regions {
 }
 
 process extract_intergenic_regions {
-    publishDir "${genomes_directory}/bed", \
+    publishDir "${params.genomes_directory}/bed", \
         pattern: "reference.intergenic.bed.gz", \
         mode: "copy", overwrite: true
 
@@ -350,7 +346,7 @@ process extract_intergenic_regions {
 }
 
 process bed_to_interval_list {
-    publishDir "${genomes_directory}/interval-list", \
+    publishDir "${params.genomes_directory}/interval-list", \
         pattern: "*.interval_list", \
         mode: "copy", overwrite: true
 
@@ -385,13 +381,79 @@ process bed_to_interval_list {
     )
     
     for name in "\${!files[@]}"; do
-        java -jar ${picard_jar} \
-            BedToIntervalList \
-            --INPUT \${files[\$name]} \
-            --OUTPUT reference.\${name}.interval_list \
-            --SEQUENCE_DICTIONARY ${dict} \
-            --USE_JDK_DEFLATER true \
-            --USE_JDK_INFLATER true
+        picard BedToIntervalList \
+        --INPUT \${files[\$name]} \
+        --OUTPUT reference.\${name}.interval_list \
+        --SEQUENCE_DICTIONARY ${dict} \
+        --USE_JDK_DEFLATER true \
+        --USE_JDK_INFLATER true
     done
+    """
+}
+
+process star_create_index {
+    publishDir "${params.genomes_directory}/star-index", \
+        mode: "move", overwrite: true
+
+    input:
+    path(fasta)
+    path(gtf)
+
+    output:
+    path("Genome")
+    path("Log.out")
+    path("SA")
+    path("SAindex")
+    path("chrLength.txt")
+    path("chrName.txt")
+    path("chrNameLength.txt")
+    path("chrStart.txt")
+    path("exonGeTrInfo.tab")
+    path("exonInfo.tab")
+    path("geneInfo.tab")
+    path("genomeParameters.txt")
+    path("sjdbInfo.txt")
+    path("sjdbList.fromGTF.out.tab")
+    path("sjdbList.out.tab")
+    path("transcriptInfo.tab")
+
+    """
+    gunzip -c ${fasta} > reference.fa
+    gunzip -c ${gtf} > reference.gtf
+    STAR \
+    --runThreadN ${task.cpus} \
+    --runMode genomeGenerate \
+    --genomeDir . \
+    --genomeFastaFiles reference.fa \
+    --sjdbGTFfile reference.gtf \
+    --sjdbOverhang ${params.star_sjdbOverhang} \
+    --genomeSAindexNbases ${params.star_genomeSAindexNbases} \
+    --limitGenomeGenerateRAM 200000000000
+    """
+}
+
+process rsem_prepare_reference {
+    publishDir "${params.genomes_directory}/rsem-reference",
+        mode: "move", overwrite: true
+
+    input:
+    path(fasta)
+    path(gtf)
+
+    output:
+    path("reference.chrlist")
+    path("reference.grp")
+    path("reference.idx.fa")
+    path("reference.n2g.idx.fa")
+    path("reference.seq")
+    path("reference.ti")
+    path("reference.transcripts.fa")
+
+    """
+    gunzip -c ${fasta} > reference.fa
+    gunzip -c ${gtf} > reference.gtf
+    rsem-prepare-reference \
+    --gtf reference.gtf \
+    reference.fa reference
     """
 }

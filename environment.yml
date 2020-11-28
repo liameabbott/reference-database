@@ -1,0 +1,13 @@
+name: reference-database
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - star
+  - samtools
+  - htslib
+  - bedtools
+  - rsem
+  - picard
+  - dropseq_tools

@@ -46,6 +46,7 @@ if ( params.run_reference_data_ingestion ) {
     }
 }
 
+// construct path to specific database directory
 params.genomes_directory = [
     params.database_directory,
     "genomes",
@@ -55,6 +56,7 @@ params.genomes_directory = [
     params.assembly
 ].join("/")
 
+// include all the necessary modules
 include {
     get_reference_fasta;
     extract_primary_assembly;
@@ -73,17 +75,14 @@ include {
     extract_intronic_regions;
     extract_intergenic_regions;
     bed_to_interval_list;
-} from './genomes.nf'
-
-include {
-    rsem_prepare_reference;
-    rsem_prepare_reference_with_star;
-    generate_star_index
-} from './indices.nf'
+    star_create_index;
+    rsem_prepare_reference
+} from './modules.nf'
 
 workflow {
 
-    if ( params.run_reference_data_ingestion ) {
+    // data ingestion routine
+    if ( params.data_ingestion ) {
 
         // fetch reference genome sequence
         fasta = get_reference_fasta(params.fasta_url)
@@ -139,11 +138,21 @@ workflow {
         gtf = gtf[1]
 
     } else {
-        // read fasta and gtf files from database 
+        // read files from database if not running data ingestion
         fasta = Channel.fromPath(
             "${params.genomes_directory}/fasta/reference.fa.gz")
         gtf = Channel.fromPath(
             "${params.genomes_directory}/gtf/reference.gtf.gz")
+    }
+
+    // STAR indexing routine
+    if ( params.star_index ) {
+        star_index = star_create_index(fasta, gtf)
+    }
+
+    // RSEM reference routine
+    if ( params.rsem_reference ) {
+        rsem_reference = rsem_prepare_reference(fasta, gtf)
     }
 
     // create RSEM indices
