@@ -155,25 +155,4 @@ workflow {
         rsem_reference = rsem_prepare_reference(fasta, gtf)
     }
 
-    // create RSEM indices
-    if ( params.run_rsem_prepare_reference ) {
-        if ( params.rsem_with_star ) {
-            star_sjdb_overhang = Channel.fromList(
-                params.rsem_star_sjdb_overhang.toString().replaceAll("\\s", "").tokenize(","))
-            rsem_idx = rsem_prepare_reference_with_star(
-                fasta, gtf, star_sjdb_overhang)
-        } else {
-            rsem_idx = rsem_prepare_reference(
-                fasta, gtf)
-        }
-    }
-
-    // create STAR alignment indices
-    if ( params.run_star_indexing ) {
-        star_sjdb_overhang = Channel
-            .fromList(params.star_sjdb_overhang.toString().replaceAll("\\s", "").tokenize(","))
-        star_idx = generate_star_index(
-            fasta, gtf, star_sjdb_overhang)
-    }
-
 }
