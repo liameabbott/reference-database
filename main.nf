@@ -6,21 +6,6 @@
 // enable DSL 2 syntax
 nextflow.enable.dsl=2
 
-// core parameters
-params.database_directory = null
-params.source_database = null
-params.release = null
-params.species = null
-params.assembly = null
-
-// reference data ingestion parameters
-params.fasta_url = null
-params.gtf_url = null
-
-// STAR alignment index parameters
-params.star_read_lengths = null
-params.star_genomeSAindexNbases = 14
-
 // check that all required parameters are defined appropriately
 if ( !params.database_directory ) {
     error "Missing 'database_directory' parameter."
@@ -37,7 +22,7 @@ if ( !params.species ) {
 if ( !params.assembly ) {
     error "Missing 'assembly' parameter."
 }
-if ( params.run_reference_data_ingestion ) {
+if ( params.data_ingestion ) {
     if ( !params.fasta_url ) {
         error "Missing 'fasta_url' parameter required by reference data ingestion."
     }
