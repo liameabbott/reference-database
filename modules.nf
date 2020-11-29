@@ -71,10 +71,7 @@ process index_fasta {
     path("reference.fa.gz.gzi")
 
     """
-    samtools faidx \
-    --fai-idx reference.fa.gz.fai  \
-    --gzi-idx reference.fa.gz.gzi \
-    ${fasta}
+    samtools faidx ${fasta}
     """
 }
 
