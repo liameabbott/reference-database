@@ -209,37 +209,39 @@ process gtf_to_bed {
 
 process extract_genes {
     publishDir "${params.genomes_directory}/bed", \
-        pattern: "reference.genes.bed.gz", \
+        pattern: "reference.genic.bed.gz", \
         mode: "copy", overwrite: true
 
     input:
     path(bed)
 
     output:
-    path("reference.genes.bed")
-    path("reference.genes.bed.gz")
+    path("reference.genic.bed")
+    path("reference.genic.bed.gz")
 
     """
-    awk '\$13 == "gene"' ${bed} > reference.genes.bed
-    gzip -c reference.genes.bed > reference.genes.bed.gz
+    awk '\$13 == "gene"' ${bed} | \
+    cut -f1-6 > reference.genic.bed
+    gzip -c reference.genic.bed > reference.genic.bed.gz
     """
 }
 
 process extract_exons {
     publishDir "${params.genomes_directory}/bed", \
-        pattern: "reference.exons.bed.gz", \
+        pattern: "reference.exonic.bed.gz", \
         mode: "copy", overwrite: true
 
     input:
     path(bed)
 
     output:
-    path("reference.exons.bed")
-    path("reference.exons.bed.gz")
+    path("reference.exonic.bed")
+    path("reference.exonic.bed.gz")
 
     """
-    awk '\$13 == "exon"' ${bed} > reference.exons.bed
-    gzip -c reference.exons.bed > reference.exons.bed.gz
+    awk '\$13 == "exon"' ${bed} | \
+    cut -f1-6 > reference.exonic.bed
+    gzip -c reference.exonic.bed > reference.exonic.bed.gz
     """
 }
 
@@ -256,47 +258,50 @@ process extract_CDS {
     path("reference.CDS.bed.gz")
 
     """
-    awk '\$13 == "CDS"' ${bed} > reference.CDS.bed
+    awk '\$13 == "CDS"' ${bed} | \
+    cut -f1-6 > reference.CDS.bed
     gzip -c reference.CDS.bed > reference.CDS.bed.gz
     """
 }
 
 process extract_rRNA_genes {
     publishDir "${params.genomes_directory}/bed", \
-        pattern: "reference.genes.rRNA.bed.gz", \
+        pattern: "reference.rRNA.bed.gz", \
         mode: "copy", overwrite: true
 
     input:
     path(bed)
 
     output:
-    path("reference.genes.rRNA.bed")
-    path("reference.genes.rRNA.bed.gz")
+    path("reference.rRNA.bed")
+    path("reference.rRNA.bed.gz")
 
     """
     grep -E 'gene_(bio)?type "rRNA(_pseudogene)?"' ${bed} | \
-    awk '\$13 == "gene"' > reference.genes.rRNA.bed
-    gzip -c reference.genes.rRNA.bed > reference.genes.rRNA.bed.gz
+    awk '\$13 == "gene"' | \
+    cut -f1-6 > reference.rRNA.bed
+    gzip -c reference.rRNA.bed > reference.rRNA.bed.gz
     """
 }
 
 process extract_MT_genes {
     publishDir "${params.genomes_directory}/bed", \
-        pattern: "reference.genes.MT.bed.gz", \
+        pattern: "reference.MT.bed.gz", \
         mode: "copy", overwrite: true
     
     input:
     path(bed)
 
     output:
-    path("reference.genes.MT.bed")
-    path("reference.genes.MT.bed.gz")
+    path("reference.MT.bed")
+    path("reference.MT.bed.gz")
 
     """
     sed 's/^chr//' ${bed} | \
     grep -E '^(M|MT)\t' | \
-    awk '\$13 == "gene"' > reference.genes.MT.bed
-    gzip -c reference.genes.MT.bed > reference.genes.MT.bed.gz
+    awk '\$13 == "gene"' | \
+    cut -f1-6 > reference.MT.bed
+    gzip -c reference.MT.bed > reference.MT.bed.gz
     """
 }
 
@@ -314,8 +319,7 @@ process extract_intronic_regions {
     path("reference.intronic.bed.gz")
 
     """
-    bedtools merge -i ${exons_bed} -s | \
-    bedtools subtract -a ${genes_bed} -b stdin -s > reference.intronic.bed
+    bedtools subtract -a ${genes_bed} -b ${exons_bed} > reference.intronic.bed
     gzip -c reference.intronic.bed > reference.intronic.bed.gz
     """
 }
