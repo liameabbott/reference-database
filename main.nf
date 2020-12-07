@@ -55,6 +55,7 @@ include {
     extract_genes;
     extract_exons;
     extract_CDS;
+    extract_UTR;
     extract_rRNA_genes;
     extract_MT_genes;
     extract_intronic_regions;
