@@ -264,6 +264,25 @@ process extract_CDS {
     """
 }
 
+process extract_UTR {
+    publishDir "${params.genomes_directory}/bed", \
+        pattern: "reference.UTR.bed.gz", \
+        mode: "copy", overwrite: true
+
+    input:
+    path(exons_bed)
+    path(CDS_bed)
+
+    output:
+    path("reference.UTR.bed")
+    path("reference.UTR.bed.gz")
+
+    """
+    bedtools subtract -a ${exons_bed} -b ${CDS_bed} > reference.UTR.bed
+    gzip -c reference.UTR.bed > reference.UTR.bed.gz
+    """
+}
+
 process extract_rRNA_genes {
     publishDir "${params.genomes_directory}/bed", \
         pattern: "reference.rRNA.bed.gz", \
@@ -356,6 +375,7 @@ process bed_to_interval_list {
     path(genes_bed)
     path(exons_bed)
     path(CDS_bed)
+    path(UTR_bed)
     path(rRNA_bed)
     path(MT_bed)
     path(intronic_bed)
@@ -365,6 +385,7 @@ process bed_to_interval_list {
     path("reference.genes.interval_list")
     path("reference.exons.interval_list")
     path("reference.CDS.interval_list")
+    path("reference.UTR.interval_list")
     path("reference.genes.rRNA.interval_list")
     path("reference.genes.MT.interval_list")
     path("reference.intronic.interval_list")
@@ -375,6 +396,7 @@ process bed_to_interval_list {
         [genes]=${genes_bed}
         [exons]=${exons_bed}
         [CDS]=${CDS_bed}
+        [UTR]=${UTR_bed}
         [genes.rRNA]=${rRNA_bed}
         [genes.MT]=${MT_bed}
         [intronic]=${intronic_bed}

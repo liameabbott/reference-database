@@ -100,6 +100,7 @@ workflow {
         genes_bed = extract_genes(bed)[0]
         exons_bed = extract_exons(bed)[0]
         cds_bed = extract_CDS(bed)[0]
+        utr_bed = extract_UTR(exons_bed, cds_bed)[0]
         rrna_bed = extract_rRNA_genes(bed)[0]
         mt_bed = extract_MT_genes(bed)[0]
         intronic_bed = extract_intronic_regions(
@@ -113,6 +114,7 @@ workflow {
             genes_bed,
             exons_bed,
             cds_bed,
+            utr_bed,
             rrna_bed,
             mt_bed,
             intronic_bed,
