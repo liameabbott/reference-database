@@ -221,7 +221,8 @@ process extract_genes {
 
     """
     awk '\$13 == "gene"' ${bed} | \
-    cut -f1-6 > reference.genic.bed
+    cut -f1-6 | \
+    bedtools merge -i stdin > reference.genic.bed
     gzip -c reference.genic.bed > reference.genic.bed.gz
     """
 }
@@ -240,7 +241,8 @@ process extract_exons {
 
     """
     awk '\$13 == "exon"' ${bed} | \
-    cut -f1-6 > reference.exonic.bed
+    cut -f1-6 | \
+    bedtools merge -i stdin > reference.exonic.bed
     gzip -c reference.exonic.bed > reference.exonic.bed.gz
     """
 }
@@ -259,7 +261,8 @@ process extract_CDS {
 
     """
     awk '\$13 == "CDS"' ${bed} | \
-    cut -f1-6 > reference.CDS.bed
+    cut -f1-6 | \
+    bedtools merge -i stdin > reference.CDS.bed
     gzip -c reference.CDS.bed > reference.CDS.bed.gz
     """
 }
@@ -278,7 +281,8 @@ process extract_UTR {
     path("reference.UTR.bed.gz")
 
     """
-    bedtools subtract -a ${exons_bed} -b ${CDS_bed} > reference.UTR.bed
+    bedtools subtract -a ${exons_bed} -b ${CDS_bed} | \
+    bedtools merge -i stdin > reference.UTR.bed
     gzip -c reference.UTR.bed > reference.UTR.bed.gz
     """
 }
@@ -298,7 +302,8 @@ process extract_rRNA_genes {
     """
     grep -E 'gene_(bio)?type "rRNA(_pseudogene)?"' ${bed} | \
     awk '\$13 == "gene"' | \
-    cut -f1-6 > reference.rRNA.bed
+    cut -f1-6 | \
+    betools merge -i stdin > reference.rRNA.bed
     gzip -c reference.rRNA.bed > reference.rRNA.bed.gz
     """
 }
@@ -319,7 +324,8 @@ process extract_MT_genes {
     sed 's/^chr//' ${bed} | \
     grep -E '^(M|MT)\t' | \
     awk '\$13 == "gene"' | \
-    cut -f1-6 > reference.MT.bed
+    cut -f1-6 | \
+    bedtools merge -i stdin > reference.MT.bed
     gzip -c reference.MT.bed > reference.MT.bed.gz
     """
 }
@@ -338,7 +344,8 @@ process extract_intronic_regions {
     path("reference.intronic.bed.gz")
 
     """
-    bedtools subtract -a ${genes_bed} -b ${exons_bed} > reference.intronic.bed
+    bedtools subtract -a ${genes_bed} -b ${exons_bed} | \
+    bedtools merge -i stdin > reference.intronic.bed
     gzip -c reference.intronic.bed > reference.intronic.bed.gz
     """
 }
@@ -360,7 +367,8 @@ process extract_intergenic_regions {
     awk -v OFS=\$'\t' '{print \$1,\$2}' ${fasta_fai} | \
     sort -k1V > chr_sizes.tsv
 
-    bedtools complement -i ${genes_bed} -g chr_sizes.tsv > reference.intergenic.bed
+    bedtools complement -i ${genes_bed} -g chr_sizes.tsv | \
+    bedtools merge -i stdin > reference.intergenic.bed
     gzip -c reference.intergenic.bed > reference.intergenic.bed.gz
     """
 }
