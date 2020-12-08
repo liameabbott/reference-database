@@ -303,7 +303,7 @@ process extract_rRNA_genes {
     grep -E 'gene_(bio)?type "rRNA(_pseudogene)?"' ${bed} | \
     awk '\$13 == "gene"' | \
     cut -f1-6 | \
-    betools merge -i stdin > reference.rRNA.bed
+    bedtools merge -i stdin > reference.rRNA.bed
     gzip -c reference.rRNA.bed > reference.rRNA.bed.gz
     """
 }
