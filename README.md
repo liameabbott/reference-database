@@ -87,71 +87,71 @@ The following reference and metadata files are published in the `<database_direc
 
 #### Reference sequence
 
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/fasta/<source_database>.release_<release>.<species>.<assembly>.fa.gz`
+* `<source_database>/release-<release>/<species>/<assembly>/fasta/<source_database>.release_<release>.<species>.<assembly>.fa.gz`
   * The reference genome sequence.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/fasta/<source_database>.release_<release>.<species>.<assembly>.fa.fai`
+* `<source_database>/release-<release>/<species>/<assembly>/fasta/<source_database>.release_<release>.<species>.<assembly>.fa.fai`
   * FASTA index.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/fasta/<source_database>.release_<release>.<species>.<assembly>.fa.gzi`
+* `<source_database>/release-<release>/<species>/<assembly>/fasta/<source_database>.release_<release>.<species>.<assembly>.fa.gzi`
   * Block compression index.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/fasta/<source_database>.release_<release>.<species>.<assembly>.dict`
+* `<source_database>/release-<release>/<species>/<assembly>/fasta/<source_database>.release_<release>.<species>.<assembly>.dict`
   * Picard Tools reference sequence dictionary. 
 
 #### Reference annotation
 
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/gtf/<source_database>.release_<release>.<species>.<assembly>.gtf.gz`
+* `<source_database>/release-<release>/<species>/<assembly>/gtf/<source_database>.release_<release>.<species>.<assembly>.gtf.gz`
   * Reference annotation file.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/gtf/<source_database>.release_<release>.<species>.<assembly>.reduced.gtf.gz`
+* `<source_database>/release-<release>/<species>/<assembly>/gtf/<source_database>.release_<release>.<species>.<assembly>.reduced.gtf.gz`
   * Reduced GTF created with Drop-seq Tools' `ReduceGtf`.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/gtf/<source_database>.release_<release>.<species>.<assembly>.refFlat`
+* `<source_database>/release-<release>/<species>/<assembly>/gtf/<source_database>.release_<release>.<species>.<assembly>.refFlat`
   * refFlat file used by Picard Tools, created with `ConvertToRefFlat` tool in Drop-seq Tools package.
   
 #### Reference genome regions in BED format
 
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.bed.gz`
+* `<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.bed.gz`
   * The main annotation file, in BED format.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.genes.bed.gz`
+* `<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.genes.bed.gz`
   * All genes in the reference genome.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.exons.bed.gz`
+* `<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.exons.bed.gz`
   * All exons in the reference genome.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.CDS.bed.gz`
+* `<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.CDS.bed.gz`
   * All CDS regions in the reference genome.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.genes.rRNA.bed.gz`
+* `<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.genes.rRNA.bed.gz`
   * All ribosomal RNA genes in the reference genome.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.genes.MT.bed.gz`
+* `<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.genes.MT.bed.gz`
   * All mitochondrial genes in the reference genome.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.intronic.bed.gz`
+* `<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.intronic.bed.gz`
   * All intronic regions in the reference genome.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.intergenic.bed.gz`
+* `<source_database>/release-<release>/<species>/<assembly>/bed/<source_database>.release_<release>.<species>.<assembly>.intergenic.bed.gz`
   * All intergenic regions in the reference genome.
   
 #### Reference genome regions in interval_list format
 
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.interval_list`
+* `<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.interval_list`
   * The main annotation file, in BED format.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.genes.interval_list`
+* `<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.genes.interval_list`
   * All genes in the reference genome.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.exons.interval_list`
+* `<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.exons.interval_list`
   * All exons in the reference genome.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.CDS.interval_list`
+* `<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.CDS.interval_list`
   * All CDS regions in the reference genome.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.genes.rRNA.interval_list`
+* `<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.genes.rRNA.interval_list`
   * All ribosomal RNA genes in the reference genome.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.genes.MT.interval_list`
+* `<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.genes.MT.interval_list`
   * All mitochondrial genes in the reference genome.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.intronic.interval_list`
+* `<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.intronic.interval_list`
   * All intronic regions in the reference genome.
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.intergenic.interval_list`
+* `<source_database>/release-<release>/<species>/<assembly>/interval-list/<source_database>.release_<release>.<species>.<assembly>.intergenic.interval_list`
   * All intergenic regions in the reference genome.
   
 #### RSEM index files
 
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.chrlist`
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.grp`
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.idx.fa`
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.n2g.idx.fa`
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.seq`
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.ti`
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.transcripts.fa`
+* `<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.chrlist`
+* `<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.grp`
+* `<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.idx.fa`
+* `<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.n2g.idx.fa`
+* `<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.seq`
+* `<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.ti`
+* `<source_database>/release-<release>/<species>/<assembly>/rsem/<source_database>.release_<release>.<species>.<assembly>.transcripts.fa`
 
 #### STAR alignment index
   
@@ -161,4 +161,4 @@ This component requires that either the reference data ingestion component is al
 
 This component creates the file:
 
-* `genomes/<source_database>/release-<release>/<species>/<assembly>/star/<source_database>.release_<release>.<species>.<assembly>.<read_length>_bp.star_idx/`
+* `<source_database>/release-<release>/<species>/<assembly>/star/<source_database>.release_<release>.<species>.<assembly>.<read_length>_bp.star_idx/`
